@@ -87,9 +87,6 @@ ENV/
 *.swp
 *.swo
 
-# Ignore API documentation if generated
-API.md
-
 
 # Ignore notebook outputs
 *.nbconvert.ipynb
