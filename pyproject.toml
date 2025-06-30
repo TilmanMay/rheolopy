@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rheology"
+version = "0.1.0"
+description = "A package for geological rheology modeling and visualization"
+authors = [{ name="Tilman May", email="tmay@gfz.de" }]
+readme = "README.md"
+license = { file="LICENSE" }
+dependencies = [
+    "numpy",
+    "pandas",
+    "matplotlib",
+    "cmcrameri"
+]
+[tool.setuptools.package-data]
+"rheology" = ["config.ini", "database.json", "geotherm.csv"]
