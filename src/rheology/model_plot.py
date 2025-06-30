@@ -45,14 +45,24 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     if not (0 <= y_idx < len(y_vals)):
         raise IndexError(f"y index {y_idx} out of bounds (0 to {len(y_vals)-1})")
 
-    x_val = x_vals[x_idx]
-    y_val = y_vals[y_idx]
+    # Find nearest x and y in the grid
+    # Find nearest grid values
+    x_val = x_vals[(np.abs(x_vals - x_vals[x_idx])).argmin()]
+    y_val = y_vals[(np.abs(y_vals - y_vals[y_idx])).argmin()]
+
+    print(f"Plotting YSE at (x={x_val}, y={y_val})")
 
     # Get top and bottom z at this (x, y)
     top_layer = model.layers[0]
-    top_z = top_layer.data[
+    # Get top and bottom z at this (x, y)
+    row = top_layer.data[
         (top_layer.data["x"] == x_val) & (top_layer.data["y"] == y_val)
-    ]["z"].values[0]
+    ]
+    if row.empty:
+        raise ValueError(
+            f"No data found for (x={x_val}, y={y_val}). Check your grid indices or coordinates."
+        )
+    top_z = row["z"].values[0]
     bottom_z = model.z_min
     # Depth and temperature arrays specific to (x, y)
     zmin = bottom_z

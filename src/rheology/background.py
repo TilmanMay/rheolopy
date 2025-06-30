@@ -76,16 +76,26 @@ class BackgroundModel:
             raise RuntimeError("Cannot add layers after initialization")
 
         def make_constant_depth_layer(depth: float, material):
-            if self.grid_info is not None:
+            if self.layers:
+                # Use x and y from the first loaded layer for exact shape
+                ref_layer = self.layers[0].data
+                df = ref_layer.copy()
+                df["z"] = depth
+            elif self.grid_info is not None:
                 x_min, x_max, y_min, y_max, nx, ny = self.grid_info
+                x_vals = np.linspace(x_min, x_max, nx)
+                y_vals = np.linspace(y_min, y_max, ny)
+                xx, yy = np.meshgrid(x_vals, y_vals)
+                zz = np.full_like(xx, depth, dtype=float)
+                df = pd.DataFrame({"x": xx.ravel(), "y": yy.ravel(), "z": zz.ravel()})
             else:
                 x_min, x_max, nx = 0, 100_000, 101
                 y_min, y_max, ny = 0, 100_000, 101
-            x_vals = np.linspace(x_min, x_max, nx)
-            y_vals = np.linspace(y_min, y_max, ny)
-            xx, yy = np.meshgrid(x_vals, y_vals)
-            zz = np.full_like(xx, depth, dtype=float)
-            df = pd.DataFrame({"x": xx.ravel(), "y": yy.ravel(), "z": zz.ravel()})
+                x_vals = np.linspace(x_min, x_max, nx)
+                y_vals = np.linspace(y_min, y_max, ny)
+                xx, yy = np.meshgrid(x_vals, y_vals)
+                zz = np.full_like(xx, depth, dtype=float)
+                df = pd.DataFrame({"x": xx.ravel(), "y": yy.ravel(), "z": zz.ravel()})
             layer = Layer3D.__new__(Layer3D)
             layer.material = material
             layer.data = df
