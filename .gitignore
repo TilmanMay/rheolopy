@@ -92,4 +92,4 @@ ENV/
 *.nbconvert.ipynb
 
 # Ignore other non-package files
-# ...add more as needed...
+rheology.png
