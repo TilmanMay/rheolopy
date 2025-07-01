@@ -184,7 +184,7 @@
     "q_diff": 335e3,
     "d": 1e-4,
     "m": 3,
-    "convert": "MPa"
+    "convert": ["MPa", "um"]
   },
   {
     "id": "olivine_hk_dry",
@@ -201,6 +201,6 @@
     "q_diff": 375e3,
     "d": 1e-4,
     "m": 3,
-    "convert": "MPa"
+    "convert": ["MPa", "um"]
   }
 ]
