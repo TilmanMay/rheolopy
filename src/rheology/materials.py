@@ -148,20 +148,32 @@ class Material:
 
 
 def materials(database_path="database.json"):
+    """
+    Load materials from a JSON database file.
+    If database_path is not absolute, first try to resolve relative to the current working directory.
+    If not found, try to resolve relative to the project/module directory.
+    """
+    import os
+    import pandas as pd
 
+    # Try current working directory first
     if not os.path.isabs(database_path):
-        # Try to resolve relative to project root
-        database_path = os.path.join(os.path.dirname(__file__), database_path)
-    data = pd.read_json(database_path)
+        if os.path.exists(database_path):
+            resolved_path = database_path
+        else:
+            # Try to resolve relative to the module/project directory
+            resolved_path = os.path.join(os.path.dirname(__file__), database_path)
+    else:
+        resolved_path = database_path
 
+    if not os.path.exists(resolved_path):
+        raise FileNotFoundError(f"Material database not found: {database_path}")
+
+    data = pd.read_json(resolved_path)
     r = list()
-
     for _, row in data.iterrows():
-        # Pass all values in the row as arguments to Material
         obj = Material(**row)
         r.append(obj)
-
-    # Sort materials by their name (material.type)
     r.sort(key=lambda mat: getattr(mat, "type", ""))
     return r
 
