@@ -62,36 +62,37 @@ Class representing a rock/material with rheological properties.
 - `type`: What does your material pretend to be ? (Think of it as its name)
 
 **Byerlee:**
-- `f_f_e`: Friction coefficient for extension
-- `f_f_c`: Friction coefficient for compression
-- `f_p`: Pore fluid factor (aka. lambda)
+- `fc_e`: Friction coefficient for extension
+- `fc_c`: Friction coefficient for compression
+- `lambda_pore`: Pore fluid factor (aka. lambda)
 - `rho_b`: Bulk density of the rock in kg/m3
 
 **Dislocation:**
-- `a_p`: Power law strain rate in $Pa^{-n}s^{-1}$ for dislocation creep
+- `a_disloc`: Power law strain rate in $Pa^{-n}s^{-1}$ for dislocation creep
 
     Could also be given as A in $MPa$ or $GPa$. This is usually the value one get's from publications as it is the preexponential scaling factor in the power law equations.
-    Example: You find a value (i.e. 1e5 MPa) you can set a_p = 1e5, then you also make sure your ``convert`` option is set to ``MPa``. Same for values in $GPa$
-- `n`: Power law exponent
-- `q_p`: Activation energy for dislocation in J/mol
+    Example: You find a value (i.e. 1e5 MPa) you can set a_disloc = 1e5, then you also make sure your ``convert`` option is set to ``MPa``. Same for values in $GPa$
+- `q_disloc`: Activation energy for dislocation in J/mol
 
-    Usually this is given in kJ/mol in literature so make sure to convert accordingly
+  Usually this is given in kJ/mol in literature so make sure to convert accordingly
+- `n`: Power law exponent
+
 
 **Diffusion:** 
-- `a_f`: Power law strain rate in $Pa^{-n}s^{-1}$ for diffusion creep
+- `a_diff`: Power law strain rate in $Pa^{-n}s^{-1}$ for diffusion creep
 
     Could also be given as A in $MPa$ or $GPa$. This is usually the value one get's from publications as it is the preexponential scaling factor in the power law equations.
-    Example: You find a value (i.e. 1e5 MPa) you can set a_p = 1e5, then you also make sure your ``convert`` option is set to ``MPa``. Same for values in $GPa$
-- `q_f`: Activation energy for diffusion in J/mol
+    Example: You find a value (i.e. 1e5 MPa) you can set a_diff = 1e5, then you also make sure your ``convert`` option is set to ``MPa``. Same for values in $GPa$
+- `q_diff`: Activation energy for diffusion in J/mol
 
     Usually this is given in kJ/mol in literature so make sure to convert accordingly 
-- `a`: grain size in m
+- `d`: grain size in m
 - `m`: grain size exponent
 
     Caution: Some define this exponent as negative. Here, it is always positive defined
 
 **Other:**
-- `convert`: Either `false`, `"MPa"` or `"GPa"` depending on what values you have for `a_p` and `a_f`
+- `convert`: Either `false`, `"MPa"` or `"GPa"` depending on what values you have for `a_disloc` and `a_diff`
 
 ### materials(database_path="database.json") -> list[Material]
 Load all materials from the database file.
@@ -143,8 +144,8 @@ Plot the yield strength envelope (YSE) at a given (x, y) location.
 ### sigma_byerlee(material, z, mode) -> float
 Compute maximum differential stress using Byerlee’s law.
 
-### eta_effective(material, temp, strain_rate) -> float
-Compute the effective viscosity for a material at given T and strain rate.
+### eta_effective(material, temp, strain_rate) -> tuple
+Compute the effective viscosity $\eta_{eff}$ for a material at given T and strain rate. Also returns viscosities $\eta_{disloc}$ and $\eta_{diff}$
 
 ### calc_peierls(material, temp, strain_rate) -> float
 Calculate Peierls stress for olivine. This form of deformation is not well investigated for most materials. For olivine however it is. The relevant parameters for this are hardcoded (for now) as :

@@ -15,7 +15,7 @@ def sigma_byerlee(material, z, mode):
     Parameters
     ----------
     material : Material
-        Material object with properties 'f_f_e', 'f_f_c', 'f_p', and 'rho_b'.
+        Material object with properties 'fc_e', 'fc_c', 'lambda_p', and 'rho_b'.
     z : float
         Depth below surface in meters (z > 0).
     mode : str
@@ -27,15 +27,15 @@ def sigma_byerlee(material, z, mode):
         Differential stress in Pascals (Pa).
     """
     if mode == "compression":
-        f_f = material.f_f_c
+        f_f = material.fc_c
     elif mode == "extension":
-        f_f = material.f_f_e
+        f_f = material.fc_e
     else:
         raise ValueError("Invalid parameter for mode:", mode)
-    f_p = material.f_p
+    lambda_pore = material.lambda_pore
     rho_b = material.rho_b
 
-    return f_f * rho_b * g * z * (1.0 - f_p)
+    return f_f * rho_b * g * z * (1.0 - lambda_pore)
 
 
 def eta_dislocation(material, temp, strain_rate):
@@ -45,7 +45,7 @@ def eta_dislocation(material, temp, strain_rate):
     Parameters
     ----------
     material : Material
-        Material object with properties 'a_p', 'n', 'q_p', and optionally 'a' (grain size).
+        Material object with properties 'a_disloc', 'n', 'q_disloc', and optionally 'd' (grain size).
     temp : float
         Temperature in Kelvin.
     strain_rate : float
@@ -56,21 +56,21 @@ def eta_dislocation(material, temp, strain_rate):
     eta_dislocation : float
         Dislocation creep viscosity in Pa·s.
     """
-    a_p = material.a_p
+    a_disloc = material.a_disloc
     n = material.n
-    d = material.a  # grain size
-    m = 0
-    q_p = material.q_p
+    d = material.d  # grain size
+    m = 0  # dislocation creep does not depend on grain size
+    q_disloc = material.q_disloc
     F_2 = 1 / (2 ** ((n - 1) / n) * 3 ** ((n + 1) / (2 * n)))
 
-    if a_p is None:
+    if a_disloc is None:
         return np.nan
 
     return (
         F_2
         * 1
-        / ((a_p) ** (1 / n) * d ** (-(m) / (n)) * strain_rate ** ((n - 1) / (n)))
-        * np.exp(q_p / n / R / temp)
+        / ((a_disloc) ** (1 / n) * d ** (-(m) / (n)) * strain_rate ** ((n - 1) / (n)))
+        * np.exp(q_disloc / n / R / temp)
     )
 
 
@@ -81,7 +81,7 @@ def eta_diffusion(material, temp, strain_rate):
     Parameters
     ----------
     material : Material
-        Material object with properties 'a', 'm', 'a_f', and 'q_f'.
+        Material object with properties 'd', 'm', 'a_diff', and 'q_diff'.
     temp : float
         Temperature in Kelvin.
     strain_rate : float
@@ -92,22 +92,22 @@ def eta_diffusion(material, temp, strain_rate):
     eta_diffusion : float
         Diffusion creep viscosity in Pa·s.
     """
-    d = material.a
+    d = material.d
     m = material.m
-    a_f = material.a_f
-    q_f = material.q_f
+    a_diff = material.a_diff
+    q_diff = material.q_diff
     n = 1
 
     F_2 = 3 / (2 ** ((n - 1) / n) * 3 ** ((n + 1) / (2 * n)))
 
-    if a_f is None:
+    if a_diff is None:
         return np.nan
     else:
         return (
             F_2
             * 1
-            / ((a_f) ** (1 / n) * d ** (-(m) / (n)) * strain_rate ** ((n - 1) / (n)))
-            * np.exp(q_f / n / R / temp)
+            / ((a_diff) ** (1 / n) * d ** (-(m) / (n)) * strain_rate ** ((n - 1) / (n)))
+            * np.exp(q_diff / n / R / temp)
         )
 
 
@@ -155,7 +155,7 @@ def calc_peierls(material, temp, strain_rate):
     Parameters
     ----------
     material : Material
-        Material object with properties 'a_p', 'n', 'q_p'.
+        Material object with properties 'a_disloc', 'n', 'q_disloc'.
     temp : float
         Temperature in Kelvin.
     strain_rate : float
@@ -170,12 +170,12 @@ def calc_peierls(material, temp, strain_rate):
     sigmaPeierls = 8.5e9
     stressPD = 200e6
 
-    a_p = material.a_p
+    a_disloc = material.a_disloc
     n = material.n
-    q_p = material.q_p
+    q_disloc = material.q_disloc
 
-    termln = np.log(stressPD * (a_p / strain_rate) ** (1.0 / n))
-    TPDL = q_p / (n * R * termln)
+    termln = np.log(stressPD * (a_disloc / strain_rate) ** (1.0 / n))
+    TPDL = q_disloc / (n * R * termln)
     QPeierls = (
         R
         * TPDL
@@ -256,7 +256,7 @@ def sigma_d(
     s_disloc = 2 * eta_dis * e_prime
     s_diff = 2 * eta_diff * e_prime
 
-    if "peierls" in compute and "a_p" in proplist:
+    if "peierls" in compute and "a_disloc" in proplist:
         s_peierls = calc_peierls(material, temp, e_prime)
     else:
         s_peierls = 0

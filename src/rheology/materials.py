@@ -19,29 +19,29 @@ class Material:
 
     Byerlee's law
     -------------
-    f_f_e : float
+    fc_e : float
         Friction coefficient for extension
-    f_f_c : float
+    fc_c : float
         Friction coefficient for compression
-    f_p : float
+    lambda_pore : float
         Pore fluid factor
     rho_b : float
         Bulk density of the rock / kg/m3
 
     Dislocation creep
     -----------------
-    a_p : float
+    a_disloc : float
         Preexponential scaling factor / Pa^(-n)/s
     n : float
         Power law exponent
-    q_p : float
+    q_disloc : float
         Activation energy / J/mol
 
     Diffusion creep
     ---------------
-    a_f : float
+    a_diff : float
         Preexponential scaling factor / 1/Pa/s
-    q_f : float
+    q_diff : float
         Activation energy / J/mol
     a : float
         Grain size / m
@@ -63,46 +63,46 @@ class Material:
         id,
         source="",
         type="",
-        f_f_e=0.75,
-        f_f_c=2.0,
-        f_p=0.35,
-        rho_b=3250.0,
-        a_p=1,
-        n=3.5,
-        q_p=535e3,
-        a_f=None,
-        q_f=None,
-        a=None,
+        fc_e=0.75,
+        fc_c=2.0,
+        lambda_pore=0.36,
+        rho_b=None,
+        a_disloc=None,
+        n=None,
+        q_disloc=None,
+        a_diff=None,
+        q_diff=None,
+        d=None,
         m=None,
         convert=False,
     ):
         self.id = id
         self.source = source
         self.type = type
-        self.f_f_e = f_f_e
-        self.f_f_c = f_f_c
-        self.f_p = f_p
+        self.fc_e = fc_e
+        self.fc_c = fc_c
+        self.lambda_pore = lambda_pore
         self.rho_b = rho_b
         # Preexponential scaling factor in Pa^(-n)/s
         if convert == "MPa":
-            self.a_p = self.a_pa(a_p, n, 6)
+            self.a_disloc = self.aToPa(a_disloc, n, 6)
         elif convert == "GPa":
-            self.a_p = self.a_pa(a_p, n, 9)
+            self.a_disloc = self.aToPa(a_disloc, n, 9)
         else:
-            self.a_p = a_p
+            self.a_disloc = a_disloc
         self.n = n
-        self.q_p = q_p
+        self.q_disloc = q_disloc
         if convert == "MPa":
-            self.a_f = self.a_pa(a_f, n, 6)
+            self.a_diff = self.aToPa(a_diff, n, 6)
         elif convert == "GPa":
-            self.a_f = self.a_pa(a_f, n, 9)
+            self.a_diff = self.aToPa(a_diff, n, 9)
         else:
-            self.a_f = a_f
-        self.q_f = q_f
-        self.a = a
+            self.a_diff = a_diff
+        self.q_diff = q_diff
+        self.d = d
         self.m = m
 
-    def a_pa(self, A, n, u):
+    def aToPa(self, A, n, u):
         A = float(A)
         n = float(n)
         return A * 10.0 ** (-1.0 * n * u)
