@@ -89,51 +89,9 @@ class Material:
         self.q_diff = q_diff
         self.d = d
         self.m = m
-        # Handle convert as a list of tags
-        convert = convert or []
-        if not isinstance(convert, list):
-            convert = [convert]
-        # Dislocation creep
-        if "MPa" in convert:
-            self.a_disloc = self.aToPa(a_disloc, n, 6)
-        elif "GPa" in convert:
-            self.a_disloc = self.aToPa(a_disloc, n, 9)
-        else:
-            self.a_disloc = a_disloc
-        # Diffusion creep
-        if "MPa" in convert:
-            self.a_diff = self.aToPa(a_diff, 1, 6, m, convert)
-        elif "GPa" in convert:
-            self.a_diff = self.aToPa(a_diff, 1, 9, m, convert)
-        else:
-            self.a_diff = self.aToPa(a_diff, 1, 0, m, convert)
+        self.a_disloc = a_disloc
+        self.a_diff = a_diff
 
-    def aToPa(self, A, n, u, m=0, convert=None):
-        """
-        Convert A from literature units to SI (Pa, m) based on stress and grain size units.
-        - A: original A value
-        - n: stress exponent
-        - u: stress unit factor (6 for MPa, 9 for GPa)
-        - m: grain size exponent (default 0 if not applicable)
-        - convert: list of tags (e.g., ["MPa", "um"])
-        """
-        if A is None:
-            return None
-        A = float(A)
-        n = float(n)
-        m = float(m)
-        # Stress unit conversion
-        stress_conversion = 10.0 ** (-n * u)
-        # Grain size unit conversion
-        grain_conversion = 1.0
-        if convert and "um" in convert:
-            grain_conversion = (10.0**-6) ** m
-        elif convert and "mm" in convert:
-            grain_conversion = (10.0**-3) ** m
-        elif convert and "nm" in convert:
-            grain_conversion = (10.0**-9) ** m
-        # Default is meters (no conversion)
-        return A * stress_conversion * grain_conversion
 
     def get_attributes(self):
         """Return a list of attribute names that are not NaN."""
