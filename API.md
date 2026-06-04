@@ -1,6 +1,6 @@
 # Rheolog API Documentation
 
-This document describes the main classes and functions provided by the `rheology` package.
+This document describes the main classes and functions provided by the `rheolopy` package.
 
 ---
 
@@ -78,14 +78,14 @@ Class representing a rock/material with rheological properties.
 - `n`: Power law exponent
 
 
-**Diffusion:** 
+**Diffusion:**
 - `a_diff`: Power law strain rate in $Pa^{-n}s^{-1}$ for diffusion creep
 
     Could also be given as A in $MPa$ or $GPa$. This is usually the value one get's from publications as it is the preexponential scaling factor in the power law equations.
     Example: You find a value (i.e. 1e5 MPa) you can set a_diff = 1e5, then you also make sure your ``convert`` option is set to ``MPa``. Same for values in $GPa$
 - `q_diff`: Activation energy for diffusion in J/mol
 
-    Usually this is given in kJ/mol in literature so make sure to convert accordingly 
+    Usually this is given in kJ/mol in literature so make sure to convert accordingly
 - `d`: grain size in m
 - `m`: grain size exponent
 
@@ -152,13 +152,13 @@ Calculate Peierls stress for olivine. This form of deformation is not well inves
 ```python
     epsPeierls = 5.7e11 # Dorn critical strain rate
     sigmaPeierls = 8.5e9 #Peierls critical stress
-    stressPD = 200e6 
+    stressPD = 200e6
 ```
 it is automatically calculated for olivine as long as it is clear that the material is supposed to be olivine:
 
 ```python
     if "olivine" in material.type.lower():
-        #calculate 
+        #calculate
 ```
 ### compute_dsigma(background, z, T, strain_rate, x_idx=None, y_idx=None, return_all=False, return_index=False,) -> tuple
 Compute the minimum differential stress according to all the provided laws.

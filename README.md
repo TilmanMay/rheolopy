@@ -1,6 +1,6 @@
 # Rheology
 
-**Rheology** is a Python package for geological rheology modeling and visualization. It provides tools to construct, analyze, and visualize layered lithospheric models, compute yield strength envelopes, and more.
+**Rheolopy** is a Python package for geological rheology modeling and visualization. It provides tools to construct, analyze, and visualize layered lithospheric models, compute yield strength envelopes, and more.
 
 Rheology describes how rocks deform under stress, accounting for both brittle and ductile behaviors depending on temperature, pressure, and strain rate. In this code, rheological properties are calculated using experimentally derived flow laws for different deformation mechanisms (such as brittle failure, diffusion creep, and dislocation creep). The code combines these laws to compute yield strength profiles and effective viscosities, enabling direct comparison of rock strength and deformation across varying geological conditions.
 
@@ -22,7 +22,7 @@ Rheology describes how rocks deform under stress, accounting for both brittle an
 Install from PyPI:
 
 ```sh
-pip install rheology
+pip install rheolopy
 ```
 
 
@@ -85,7 +85,7 @@ If you use this package in your research, consider citing it :)
 
 ## Contributing
 
-Contributions, bug reports, and feature requests are welcome!  
+Contributions, bug reports, and feature requests are welcome!
 Please open an issue or submit a pull request.
 
 ---

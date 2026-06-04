@@ -34,7 +34,7 @@ class Geotherm:
         else:
             # Try package data
             try:
-                with importlib.resources.files("rheology").joinpath(path).open(
+                with importlib.resources.files("rheolopy").joinpath(path).open(
                     "r"
                 ) as f:
                     data = np.loadtxt(f, skiprows=1, delimiter=",")

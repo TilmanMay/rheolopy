@@ -15,7 +15,7 @@ from .materials import (
 from .model_plot import (
     plot_yse,
 )
-from .rheology import (
+from .rheolopy import (
     sigma_byerlee,
     eta_effective,
     calc_peierls,

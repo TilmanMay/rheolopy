@@ -8,23 +8,23 @@ def load_config(path=None):
     config = configparser.ConfigParser()
     if path is None:
         # Load config.ini from the package data
-        with importlib.resources.files("rheology").joinpath("config.ini").open(
+        with importlib.resources.files("rheolopy").joinpath("config.ini").open(
             "r"
         ) as f:
             config.read_file(f)
         config._path = os.path.abspath(
-            importlib.resources.files("rheology").joinpath("config.ini")
+            importlib.resources.files("rheolopy").joinpath("config.ini")
         )
     else:
         if not os.path.isabs(path) and not os.path.exists(path):
             # Try to load from package data if not found in filesystem
             try:
-                with importlib.resources.files("rheology").joinpath(path).open(
+                with importlib.resources.files("rheolopy").joinpath(path).open(
                     "r"
                 ) as f:
                     config.read_file(f)
                 config._path = os.path.abspath(
-                    importlib.resources.files("rheology").joinpath(path)
+                    importlib.resources.files("rheolopy").joinpath(path)
                 )
                 return config
             except FileNotFoundError:

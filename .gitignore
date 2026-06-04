@@ -93,3 +93,4 @@ ENV/
 
 # Ignore other non-package files
 rheology.png
+process_rheology/process_data_helen.py

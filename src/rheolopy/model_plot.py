@@ -2,7 +2,7 @@ import numpy as np
 from cmcrameri import cm
 
 from .io_util import load_config
-from .rheology import compute_dsigma
+from .rheolopy import compute_dsigma
 from .geotherm import Geotherm
 
 import matplotlib.pyplot as plt
