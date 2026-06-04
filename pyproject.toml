@@ -9,6 +9,7 @@ description = "A package for geological rheology modeling and visualization"
 authors = [{ name="Tilman May", email="tmay@gfz.de" }]
 readme = "README.md"
 license = { file="LICENSE" }
+requires-python = ">=3.8"
 dependencies = [
     "numpy",
     "pandas",

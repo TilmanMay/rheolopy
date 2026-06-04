@@ -3,7 +3,6 @@ import numpy as np
 from .materials import Material
 from .background import BackgroundModel
 
-
 R = 8.314472  # m2kg/s2/K/mol
 g = 9.81  # m/s2
 
@@ -166,24 +165,27 @@ def calc_peierls(material, temp, strain_rate):
     peierls : float
         Peierls stress in Pascals (Pa).
     """
-    epsPeierls = 5.7e11
-    sigmaPeierls = 8.5e9
-    stressPD = 200e6
+    eps_peierls = material.eps_peierls
+    sigma_peierls = material.sigma_peierls
+    stress_pd = material.stress_pd
+
+    if eps_peierls is None or sigma_peierls is None or stress_pd is None:
+        return 0.0
 
     a_disloc = material.a_disloc
     n = material.n
     q_disloc = material.q_disloc
 
-    termln = np.log(stressPD * (a_disloc / strain_rate) ** (1.0 / n))
+    termln = np.log(stress_pd * (a_disloc / strain_rate) ** (1.0 / n))
     TPDL = q_disloc / (n * R * termln)
     QPeierls = (
         R
         * TPDL
-        * np.log(epsPeierls / strain_rate)
-        * ((1.0 - stressPD / sigmaPeierls) ** -2.0)
+        * np.log(eps_peierls / strain_rate)
+        * ((1.0 - stress_pd / sigma_peierls) ** -2.0)
     )
-    peierls = sigmaPeierls * (
-        1.0 - np.sqrt((R * temp / QPeierls) * np.log(epsPeierls / strain_rate))
+    peierls = sigma_peierls * (
+        1.0 - np.sqrt((R * temp / QPeierls) * np.log(eps_peierls / strain_rate))
     )
 
     return peierls if peierls > 0 else 0.0
@@ -194,7 +196,6 @@ def sigma_d(
     z,
     temp,
     strain_rate=None,
-    compute=None,
     mode=None,
     return_all=False,
     return_index=False,
@@ -214,10 +215,6 @@ def sigma_d(
         Temperature in Kelvin.
     strain_rate : float, optional
         Reference strain rate in 1/s. If None, defaults to 1e-17 1/s.
-    compute : list of str, optional
-        List of processes to compute: 'dislocation', 'diffusion', 'peierls'.
-        If None, uses ['diffusion', 'dislocation', 'peierls'] for olivine,
-        otherwise ['diffusion', 'dislocation'].
     mode : str, optional
         'compression' or 'extension'.
     return_all : bool, optional
@@ -236,17 +233,11 @@ def sigma_d(
         e_prime = 1e-17
     else:
         e_prime = strain_rate
-    if "olivine" in material.type.lower():
-        compute_default = ["diffusion", "dislocation", "peierls"]
-    else:
-        compute_default = ["diffusion", "dislocation"]
-    if compute is None:
-        compute = compute_default
-    else:
-        # Check the keywords
-        for kwd in compute:
-            if kwd not in compute_default:
-                raise ValueError("Unknown compute keyword", kwd)
+    include_peierls = (
+        material.eps_peierls is not None
+        and material.sigma_peierls is not None
+        and material.stress_pd is not None
+    )
 
     s_byerlee = sigma_byerlee(material, z, mode)
 
@@ -256,7 +247,7 @@ def sigma_d(
     s_disloc = 2 * eta_dis * e_prime
     s_diff = 2 * eta_diff * e_prime
 
-    if "peierls" in compute and "a_disloc" in proplist:
+    if include_peierls:
         s_peierls = calc_peierls(material, temp, e_prime)
     else:
         s_peierls = 0
@@ -273,7 +264,6 @@ def sigma_d(
         else:
             return np.nanargmin([s_byerlee, np.nan, s_diff, s_disloc])
     else:
-        # print("s_byerlee, s_creep, s_diff", s_byerlee, s_creep, s_diff)
         return min(s_byerlee, s_creep, s_diff, s_disloc)
 
 

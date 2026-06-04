@@ -56,6 +56,15 @@ class Material:
         Dorn's law activation energy / J/mol
     a_d : float
         Dorn's law strain rate
+
+    Peierls creep
+    -------------
+    eps_peierls : float
+        Reference strain rate / 1/s
+    sigma_peierls : float
+        Critical stress / Pa
+    stress_pd : float
+        Peierls stress constant / Pa
     """
 
     def __init__(
@@ -74,6 +83,9 @@ class Material:
         q_diff=None,
         d=None,
         m=None,
+        eps_peierls=None,
+        sigma_peierls=None,
+        stress_pd=None,
         convert=None,  # now a list of tags as strings
     ):
         self.id = id
@@ -91,7 +103,9 @@ class Material:
         self.m = m
         self.a_disloc = a_disloc
         self.a_diff = a_diff
-
+        self.eps_peierls = eps_peierls
+        self.sigma_peierls = sigma_peierls
+        self.stress_pd = stress_pd
 
     def get_attributes(self):
         """Return a list of attribute names that are not NaN."""

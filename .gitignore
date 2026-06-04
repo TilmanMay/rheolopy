@@ -73,9 +73,9 @@ ENV/
 *.json
 *.ini
 # Except package data
-!src/rheology/*.csv
-!src/rheology/*.json
-!src/rheology/*.ini
+!src/rheolopy/*.csv
+!src/rheolopy/*.json
+!src/rheolopy/*.ini
 
 
 # Ignore test outputs

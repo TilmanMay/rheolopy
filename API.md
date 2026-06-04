@@ -1,4 +1,4 @@
-# Rheolog API Documentation
+# Rheolopy API Documentation
 
 This document describes the main classes and functions provided by the `rheolopy` package.
 
