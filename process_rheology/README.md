@@ -5,7 +5,7 @@ This folder contains a script to process geological data using the rheology pack
 ## Files
 
 - `config.ini` - Configuration file with processing parameters
-- `process_data.py` - Main processing script  
+- `process_data.py` - Main processing script
 - `input.csv` - Sample input data file
 - `output.csv` - Generated output file (after running the script)
 
@@ -20,7 +20,7 @@ strain_rate = 1e-17
 [Settings]
 inputfile = input.csv
 outputfile = output.csv
-rheology_law = peridotite_dry
+rheology_law = olivine_hirth_dry
 ```
 
 ### Available Materials
@@ -30,8 +30,6 @@ The `rheology_law` parameter should match a material ID or type from the databas
 - `olivine_karato_wet`
 - `olivine_hirth_dry`
 - `olivine_hirth_wet`
-
-**Note:** "peridotite_dry" is not in the default database. You may want to use `olivine_hirth_dry` or `olivine_karato_dry` instead, as peridotite is primarily composed of olivine.
 
 ## Input Data Format
 
