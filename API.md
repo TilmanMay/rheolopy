@@ -94,6 +94,11 @@ Class representing a rock/material with rheological properties.
 **Other:**
 - `convert`: Either `false`, `"MPa"` or `"GPa"` depending on what values you have for `a_disloc` and `a_diff`
 
+**Peierls:**
+- `eps_peierls`: Reference strain rate in 1/s
+- `sigma_peierls`: Critical stress in Pa
+- `stress_pd`: Peierls stress constant in Pa
+
 ### materials(database_path="database.json") -> list[Material]
 Load all materials from the database file.
 - `database_path` (str): Path to the material database JSON.
@@ -148,18 +153,9 @@ Compute maximum differential stress using Byerlee’s law.
 Compute the effective viscosity $\eta_{eff}$ for a material at given T and strain rate. Also returns viscosities $\eta_{disloc}$ and $\eta_{diff}$
 
 ### calc_peierls(material, temp, strain_rate) -> float
-Calculate Peierls stress for olivine. This form of deformation is not well investigated for most materials. For olivine however it is. The relevant parameters for this are hardcoded (for now) as :
-```python
-    epsPeierls = 5.7e11 # Dorn critical strain rate
-    sigmaPeierls = 8.5e9 #Peierls critical stress
-    stressPD = 200e6
-```
-it is automatically calculated for olivine as long as it is clear that the material is supposed to be olivine:
-
-```python
-    if "olivine" in material.type.lower():
-        #calculate
-```
+Calculate Peierls stress when the material provides Peierls parameters. The calculation uses
+`eps_peierls`, `sigma_peierls`, and `stress_pd` from the `Material` instance. If any of these
+are missing, the function returns 0.0.
 ### compute_dsigma(background, z, T, strain_rate, x_idx=None, y_idx=None, return_all=False, return_index=False,) -> tuple
 Compute the minimum differential stress according to all the provided laws.
 #### compute_dsigma(background, z, T, strain_rate, x_idx=None, y_idx=None, return_all=False, return_index=False) -> tuple
