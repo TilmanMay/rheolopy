@@ -8,7 +8,8 @@ This document describes the main classes and functions provided by the `rheolopy
 
 ### BackgroundModel
 Main class for building, initializing, and querying a layered 3D geological model.
-Since every layer in the model corresponds to the top boundray of the geological unit, the last layer (the deepest one) has a default thickness of 10km.
+**Coordinate Convention:** Internally, `BackgroundModel` expects elevations/depths to be defined positive upwards (e.g., surface=0, Moho=-30,000). CSV files containing layer geometry should adhere to this.
+Since every layer in the model corresponds to the top boundary of the geological unit, the last layer (the deepest one) has a default thickness of 10km.
 **Methods:**
 - `initialize()`
   - Initialize the model after adding layers.
@@ -34,7 +35,7 @@ Represents a single 3D layer with associated material and grid data.
 
 ### load_model(config_path=None) -> BackgroundModel
 Load a background model from a configuration file and associated layer files.
-- `config_path` (str, optional): Path to the config file. If not provided, tries to auto-detect (it will search for a `layers` folder in your current dict and will load a .ini file, if it exists).
+- `config_path` (str, optional): Path to the config file. If not provided, tries to auto-detect (it will search for a `layers` folder in your current directory and will load a .ini file, if it exists).
 - **Returns:** `BackgroundModel` instance.
 
 ### load_config(path=None) -> configparser.ConfigParser
@@ -57,7 +58,7 @@ Resolve a file path from the config, relative to the config file location.
 Class representing a rock/material with rheological properties.
 
 **Attributes:**
-- `id`: Unique identifier, used for quering the material
+- `id` | `str` | id of the material. This acts as the key, used for querying the material
 - `source`: What are these values based on / where are they from
 - `type`: What does your material pretend to be ? (Think of it as its name)
 
@@ -136,7 +137,7 @@ Represents a geotherm (temperature-depth profile) and provides interpolation and
 ### plot_layer_thickness(self) -> matplotlib.figure.Figure
 Plot the thickness of each model layer as a 2D map.
 
-### plot_slice(self, y_index=None, x-index=None) -> matplotlib.figure.Figure
+##### `plot_slice(self, y_index=None, x_index=None)` -> matplotlib.figure.Figure
 Plot a cross-section at a given x- or y-index.
 
 ### plot_yse(model, x=None, y=None, strain_rate=None, geotherm=None) -> matplotlib.figure.Figure
@@ -156,9 +157,9 @@ Compute the effective viscosity $\eta_{eff}$ for a material at given T and strai
 Calculate Peierls stress when the material provides Peierls parameters. The calculation uses
 `eps_peierls`, `sigma_peierls`, and `stress_pd` from the `Material` instance. If any of these
 are missing, the function returns 0.0.
-### compute_dsigma(background, z, T, strain_rate, x_idx=None, y_idx=None, return_all=False, return_index=False,) -> tuple
-Compute the minimum differential stress according to all the provided laws.
-#### compute_dsigma(background, z, T, strain_rate, x_idx=None, y_idx=None, return_all=False, return_index=False) -> tuple
+##### compute_dsigma(background, z, T, strain_rate, ...)
+Compute differential stress for a given background model.
+- **Coordinate Convention:** The input depth `z` (and the `geotherm.csv` data) must be provided as **positive downwards** (e.g., z=15,000 meters) to match standard experimental data compatibility. The function automatically maps this to `BackgroundModel`'s internal positive upwards system.
 
 Compute the minimum differential stress according to all the provided laws.
 

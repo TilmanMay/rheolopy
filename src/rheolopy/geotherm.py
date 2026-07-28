@@ -21,7 +21,7 @@ class Geotherm:
             config = load_config()
         if path is None:
             path = config.get("General", "geotherm")
-            config_dir = os.path.dirname(config._path)
+            config_dir = os.path.dirname(config.config_path)
             path = os.path.abspath(os.path.join(config_dir, path))
 
         self.path = path

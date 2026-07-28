@@ -14,7 +14,7 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     including background layers and the geotherm.
     If x or y is None, uses the grid midpoint.
     """
-    config = load_config("config.ini")
+    config = getattr(model, "config", None) or load_config("config.ini")
     if strain_rate is None:
         strain_rate = config.getfloat("General", "strain_rate", fallback=1e-17)
     if geotherm is None:
@@ -136,5 +136,5 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     ax.invert_yaxis()
     ax.legend(loc="lower left")
 
-    # if created_fig:
-    #     return fig
+    if created_fig:
+        return fig

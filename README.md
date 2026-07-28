@@ -55,9 +55,9 @@ Here are the main entry points:
 
 ---
 
-### 3. Usage
+### 2. Usage
 
-For some usage overview go take a look here `Rheology Explorer` (https://git.gfz-potsdam.de/tmay/rheology_explorer). It is a tool to compare different material parameters which are dervied under laboratory conditions. Also it highlights this package useability for simple 3D rheologic investigations. This will most likely help you :)
+For some usage overview go take a look here `Rheology Explorer` (https://git.gfz-potsdam.de/tmay/rheology_explorer). It is a tool to compare different material parameters which are derived under laboratory conditions. Also it highlights this package useability for simple 3D rheologic investigations. This will most likely help you :)
 
 ## Requirements
 
@@ -79,7 +79,7 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 If you use this package in your research, consider citing it :)
 
-> Tilman May (2025). Dont worry, something is comming soon
+> Tilman May (2025). Don't worry, something is coming soon.
 
 ---
 

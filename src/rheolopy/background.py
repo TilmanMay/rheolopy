@@ -594,15 +594,14 @@ class BackgroundModel:
 
 
 def load_model(config_path=None):
-    import os
-    import glob
-
     """
     Load the background model using the config file and layer files.
     If config_path is not given, looks for a folder called 'layers' in the current directory,
     and uses the only .ini file inside as the config. Raises an error if not found or ambiguous.
     All relative paths are resolved relative to the config file location.
     """
+    import os
+    import glob
     if config_path is None:
         layers_dir = os.path.join(os.getcwd(), "layers")
         if os.path.isdir(layers_dir):

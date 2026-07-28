@@ -43,19 +43,10 @@ class Material:
         Preexponential scaling factor / 1/Pa/s
     q_diff : float
         Activation energy / J/mol
-    a : float
+    d : float
         Grain size / m
     m : float
         Grain size exponent
-
-    Dorn's law creep
-    ----------------
-    sigma_d : float
-        Dorn's law stress / Pa
-    q_d : float
-        Dorn's law activation energy / J/mol
-    a_d : float
-        Dorn's law strain rate
 
     Peierls creep
     -------------
@@ -86,7 +77,6 @@ class Material:
         eps_peierls=None,
         sigma_peierls=None,
         stress_pd=None,
-        convert=None,  # now a list of tags as strings
     ):
         self.id = id
         self.source = source
@@ -95,12 +85,12 @@ class Material:
         self.fc_c = fc_c
         self.lambda_pore = lambda_pore
         self.rho_b = rho_b
-        # Preexponential scaling factor in Pa^(-n)/s
         self.n = n
         self.q_disloc = q_disloc
         self.q_diff = q_diff
         self.d = d
         self.m = m
+        # Preexponential scaling factor in Pa^(-n)/s
         self.a_disloc = a_disloc
         self.a_diff = a_diff
         self.eps_peierls = eps_peierls

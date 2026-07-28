@@ -57,7 +57,7 @@ def eta_dislocation(material, temp, strain_rate):
     """
     a_disloc = material.a_disloc
     n = material.n
-    d = material.d  # grain size
+    d = material.d
     m = 0  # dislocation creep does not depend on grain size
     q_disloc = material.q_disloc
     F_2 = 1 / (2 ** ((n - 1) / n) * 3 ** ((n + 1) / (2 * n)))
@@ -99,7 +99,7 @@ def eta_diffusion(material, temp, strain_rate):
 
     F_2 = 3 / (2 ** ((n - 1) / n) * 3 ** ((n + 1) / (2 * n)))
 
-    if a_diff is None:
+    if a_diff is None or np.isnan(a_diff):
         return np.nan
     else:
         return (
@@ -169,7 +169,7 @@ def calc_peierls(material, temp, strain_rate):
     sigma_peierls = material.sigma_peierls
     stress_pd = material.stress_pd
 
-    if eps_peierls is None or sigma_peierls is None or stress_pd is None:
+    if any(x is None or np.isnan(x) for x in (eps_peierls, sigma_peierls, stress_pd)):
         return 0.0
 
     a_disloc = material.a_disloc
@@ -254,17 +254,22 @@ def sigma_d(
 
     if (creep > 200e6) and (s_peierls > 0) and (s_peierls < creep):
         s_creep = s_peierls
+        is_peierls = True
     else:
         s_creep = creep
+        is_peierls = False
+
     if return_all:
         return s_byerlee, s_creep, s_diff, s_disloc
     if return_index:
-        if (creep > 200e6) and (s_peierls > 0) and (s_peierls < creep):
-            return np.nanargmin([s_byerlee, s_peierls, s_diff, s_disloc])
+        if s_byerlee <= s_creep:
+            return 0
+        elif is_peierls:
+            return 1
         else:
-            return np.nanargmin([s_byerlee, np.nan, s_diff, s_disloc])
+            return np.nanargmin([np.nan, np.nan, s_diff, s_disloc])
     else:
-        return min(s_byerlee, s_creep, s_diff, s_disloc)
+        return np.nanmin([s_byerlee, s_creep])
 
 
 def compute_dsigma(
@@ -327,8 +332,12 @@ def compute_dsigma(
         else:
             raise ValueError("background must be Material or BackgroundModel")
         if mat is None:
-            return np.nan, np.nan
-        s_d_c = -1 * sigma_d(
+            if return_all:
+                return (np.nan,) * 4, (np.nan,) * 4
+            else:
+                return np.nan, np.nan
+        
+        res_c = sigma_d(
             mat,
             z,
             T,
@@ -337,7 +346,7 @@ def compute_dsigma(
             return_all=return_all,
             return_index=return_index,
         )
-        s_d_e = sigma_d(
+        res_e = sigma_d(
             mat,
             z,
             T,
@@ -346,10 +355,26 @@ def compute_dsigma(
             return_all=return_all,
             return_index=return_index,
         )
+        
+        if return_all:
+            s_d_c = tuple(-1 * val for val in res_c)
+            s_d_e = res_e
+        elif return_index:
+            s_d_c = res_c
+            s_d_e = res_e
+        else:
+            s_d_c = -1 * res_c
+            s_d_e = res_e
+
         return s_d_c, s_d_e
     else:
-        s_d_c = np.empty_like(z)
-        s_d_e = np.empty_like(z)
+        if return_all:
+            s_d_c = np.empty((len(z), 4))
+            s_d_e = np.empty((len(z), 4))
+        else:
+            s_d_c = np.empty_like(z, dtype=float)
+            s_d_e = np.empty_like(z, dtype=float)
+
         for i in range(len(z)):
             if isinstance(background, Material):
                 mat = background
@@ -359,11 +384,16 @@ def compute_dsigma(
                 mat = background.get_material_at(x_idx=x_idx, y_idx=y_idx, z=-z_model)
             else:
                 raise ValueError("background must be Material or BackgroundModel")
+            
             if mat is None:
-                s_d_c[i] = np.nan
-                s_d_e[i] = np.nan
+                if return_all:
+                    s_d_c[i] = [np.nan] * 4
+                    s_d_e[i] = [np.nan] * 4
+                else:
+                    s_d_c[i] = np.nan
+                    s_d_e[i] = np.nan
             else:
-                s_d_c[i] = -1 * sigma_d(
+                res_c = sigma_d(
                     mat,
                     z[i],
                     T[i],
@@ -372,7 +402,7 @@ def compute_dsigma(
                     return_all=return_all,
                     return_index=return_index,
                 )
-                s_d_e[i] = sigma_d(
+                res_e = sigma_d(
                     mat,
                     z[i],
                     T[i],
@@ -381,6 +411,21 @@ def compute_dsigma(
                     return_all=return_all,
                     return_index=return_index,
                 )
-        dsigma = np.concatenate((s_d_c, s_d_e[::-1]))
+                
+                if return_all:
+                    s_d_c[i] = [-1 * val for val in res_c]
+                    s_d_e[i] = res_e
+                elif return_index:
+                    s_d_c[i] = res_c
+                    s_d_e[i] = res_e
+                else:
+                    s_d_c[i] = -1 * res_c
+                    s_d_e[i] = res_e
+
+        if return_all:
+            dsigma = np.concatenate((s_d_c, s_d_e[::-1, :]), axis=0)
+        else:
+            dsigma = np.concatenate((s_d_c, s_d_e[::-1]))
+        
         depths = np.concatenate((z, z[::-1]))
         return dsigma, depths

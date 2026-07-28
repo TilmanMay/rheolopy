@@ -12,7 +12,7 @@ def load_config(path=None):
             "r"
         ) as f:
             config.read_file(f)
-        config._path = os.path.abspath(
+        config.config_path = os.path.abspath(
             importlib.resources.files("rheolopy").joinpath("config.ini")
         )
     else:
@@ -23,19 +23,19 @@ def load_config(path=None):
                     "r"
                 ) as f:
                     config.read_file(f)
-                config._path = os.path.abspath(
+                config.config_path = os.path.abspath(
                     importlib.resources.files("rheolopy").joinpath(path)
                 )
                 return config
             except FileNotFoundError:
                 pass
         config.read(path)
-        config._path = os.path.abspath(path)
+        config.config_path = os.path.abspath(path)
     return config
 
 
 def resolve_path(config, option, section="General"):
     rel_path = config.get(section, option)
-    config_dir = os.path.dirname(config._path)
+    config_dir = os.path.dirname(config.config_path)
     abs_path = os.path.abspath(os.path.join(config_dir, rel_path))
     return abs_path
