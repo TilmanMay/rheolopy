@@ -16,6 +16,14 @@ dependencies = [
     "matplotlib",
     "cmcrameri"
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "sphinx",
+    "sphinx-rtd-theme"
+]
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 

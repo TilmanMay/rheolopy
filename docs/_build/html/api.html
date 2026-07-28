@@ -1,0 +1,520 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Reference &mdash; Rheology Explorer 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to Rheology Explorer’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Rheology Explorer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#rheolopy.rheolopy.calc_peierls"><code class="docutils literal notranslate"><span class="pre">calc_peierls()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rheolopy.rheolopy.compute_dsigma"><code class="docutils literal notranslate"><span class="pre">compute_dsigma()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rheolopy.rheolopy.eta_diffusion"><code class="docutils literal notranslate"><span class="pre">eta_diffusion()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rheolopy.rheolopy.eta_dislocation"><code class="docutils literal notranslate"><span class="pre">eta_dislocation()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rheolopy.rheolopy.eta_effective"><code class="docutils literal notranslate"><span class="pre">eta_effective()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rheolopy.rheolopy.sigma_byerlee"><code class="docutils literal notranslate"><span class="pre">sigma_byerlee()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#rheolopy.rheolopy.sigma_d"><code class="docutils literal notranslate"><span class="pre">sigma_d()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-rheolopy.materials">Materials</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rheolopy.materials.Material"><code class="docutils literal notranslate"><span class="pre">Material</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#rheolopy.materials.Material.get_attributes"><code class="docutils literal notranslate"><span class="pre">Material.get_attributes()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#rheolopy.materials.get_material_by_id"><code class="docutils literal notranslate"><span class="pre">get_material_by_id()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rheolopy.materials.materials"><code class="docutils literal notranslate"><span class="pre">materials()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-rheolopy.geotherm">Geotherm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rheolopy.geotherm.Geotherm"><code class="docutils literal notranslate"><span class="pre">Geotherm</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#rheolopy.geotherm.Geotherm.as_array"><code class="docutils literal notranslate"><span class="pre">Geotherm.as_array()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rheolopy.geotherm.Geotherm.interpolate"><code class="docutils literal notranslate"><span class="pre">Geotherm.interpolate()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-rheolopy.background">Background</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rheolopy.background.BackgroundModel"><code class="docutils literal notranslate"><span class="pre">BackgroundModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#rheolopy.background.BackgroundModel.add_layer"><code class="docutils literal notranslate"><span class="pre">BackgroundModel.add_layer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rheolopy.background.BackgroundModel.get_material_at"><code class="docutils literal notranslate"><span class="pre">BackgroundModel.get_material_at()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rheolopy.background.BackgroundModel.initialize"><code class="docutils literal notranslate"><span class="pre">BackgroundModel.initialize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rheolopy.background.BackgroundModel.plot_layer_thickness"><code class="docutils literal notranslate"><span class="pre">BackgroundModel.plot_layer_thickness()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rheolopy.background.BackgroundModel.plot_slice"><code class="docutils literal notranslate"><span class="pre">BackgroundModel.plot_slice()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#rheolopy.background.BackgroundModel.print_layers_at"><code class="docutils literal notranslate"><span class="pre">BackgroundModel.print_layers_at()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#rheolopy.background.Layer3D"><code class="docutils literal notranslate"><span class="pre">Layer3D</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#rheolopy.background.load_model"><code class="docutils literal notranslate"><span class="pre">load_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#module-rheolopy.model_plot">Model Plot</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#rheolopy.model_plot.plot_yse"><code class="docutils literal notranslate"><span class="pre">plot_yse()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Rheology Explorer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">API Reference</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-rheolopy.rheolopy">
+<span id="api-reference"></span><h1>API Reference<a class="headerlink" href="#module-rheolopy.rheolopy" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.rheolopy.calc_peierls">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.rheolopy.</span></span><span class="sig-name descname"><span class="pre">calc_peierls</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain_rate</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/rheolopy.html#calc_peierls"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.rheolopy.calc_peierls" title="Link to this definition"></a></dt>
+<dd><p>Compute the Peierls stress for a material at given temperature and strain rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>material</strong> (<a class="reference internal" href="#rheolopy.materials.Material" title="rheolopy.materials.Material"><em>Material</em></a>) – Material object with properties ‘a_disloc’, ‘n’, ‘q_disloc’.</p></li>
+<li><p><strong>temp</strong> (<em>float</em>) – Temperature in Kelvin.</p></li>
+<li><p><strong>strain_rate</strong> (<em>float</em>) – Reference strain rate in 1/s.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>peierls</strong> – Peierls stress in Pascals (Pa).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.rheolopy.compute_dsigma">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.rheolopy.</span></span><span class="sig-name descname"><span class="pre">compute_dsigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">background</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/rheolopy.html#compute_dsigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.rheolopy.compute_dsigma" title="Link to this definition"></a></dt>
+<dd><p>Compute differential stress for a given material or background model at depths z and
+temperatures T. Computes for both compression and extension and returns arrays.
+Handles both scalar and array input for z and T (no vectorization).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>background</strong> (<a class="reference internal" href="#rheolopy.materials.Material" title="rheolopy.materials.Material"><em>Material</em></a><em> or </em><a class="reference internal" href="#rheolopy.background.BackgroundModel" title="rheolopy.background.BackgroundModel"><em>BackgroundModel</em></a>) – Material object or BackgroundModel instance.</p></li>
+<li><p><strong>z</strong> (<em>float</em><em> or </em><em>array-like</em>) – Depth(s) in meters below the surface (z &gt; 0).</p></li>
+<li><p><strong>T</strong> (<em>float</em><em> or </em><em>array-like</em>) – Temperature(s) in Kelvin.</p></li>
+<li><p><strong>strain_rate</strong> (<em>float</em>) – Reference strain rate in 1/s.</p></li>
+<li><p><strong>x_idx</strong> (<em>int</em><em>, </em><em>optional</em>) – x grid index for BackgroundModel (ignored for Material).</p></li>
+<li><p><strong>y_idx</strong> (<em>int</em><em>, </em><em>optional</em>) – y grid index for BackgroundModel (ignored for Material).</p></li>
+<li><p><strong>return_all</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return all computed stresses (Byerlee, creep, diffusion, dislocation).</p></li>
+<li><p><strong>return_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return the index of the controlling mechanism.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>dsigma</strong> – For scalar input: (compression, extension) stress in Pa.
+For array input: (dsigma, depths) where dsigma is a concatenated array of
+compression and extension stresses, and depths is the corresponding array of depths.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple or ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.rheolopy.eta_diffusion">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.rheolopy.</span></span><span class="sig-name descname"><span class="pre">eta_diffusion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain_rate</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/rheolopy.html#eta_diffusion"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.rheolopy.eta_diffusion" title="Link to this definition"></a></dt>
+<dd><p>Compute the viscosity for diffusion creep at specified temperature and strain rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>material</strong> (<a class="reference internal" href="#rheolopy.materials.Material" title="rheolopy.materials.Material"><em>Material</em></a>) – Material object with properties ‘d’, ‘m’, ‘a_diff’, and ‘q_diff’.</p></li>
+<li><p><strong>temp</strong> (<em>float</em>) – Temperature in Kelvin.</p></li>
+<li><p><strong>strain_rate</strong> (<em>float</em>) – Reference strain rate in 1/s.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>eta_diffusion</strong> – Diffusion creep viscosity in Pa·s.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.rheolopy.eta_dislocation">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.rheolopy.</span></span><span class="sig-name descname"><span class="pre">eta_dislocation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain_rate</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/rheolopy.html#eta_dislocation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.rheolopy.eta_dislocation" title="Link to this definition"></a></dt>
+<dd><p>Compute the viscosity for dislocation creep at specified temperature and strain rate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>material</strong> (<a class="reference internal" href="#rheolopy.materials.Material" title="rheolopy.materials.Material"><em>Material</em></a>) – Material object with properties ‘a_disloc’, ‘n’, ‘q_disloc’, and optionally ‘d’ (grain size).</p></li>
+<li><p><strong>temp</strong> (<em>float</em>) – Temperature in Kelvin.</p></li>
+<li><p><strong>strain_rate</strong> (<em>float</em>) – Reference strain rate in 1/s.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>eta_dislocation</strong> – Dislocation creep viscosity in Pa·s.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.rheolopy.eta_effective">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.rheolopy.</span></span><span class="sig-name descname"><span class="pre">eta_effective</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain_rate</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/rheolopy.html#eta_effective"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.rheolopy.eta_effective" title="Link to this definition"></a></dt>
+<dd><p>Compute the effective viscosity for a material at specified temperature and strain rate.
+Uses the harmonic mean of dislocation and diffusion creep viscosities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>material</strong> (<a class="reference internal" href="#rheolopy.materials.Material" title="rheolopy.materials.Material"><em>Material</em></a>) – Material object with required properties for creep laws.</p></li>
+<li><p><strong>temp</strong> (<em>float</em>) – Temperature in Kelvin.</p></li>
+<li><p><strong>strain_rate</strong> (<em>float</em>) – Reference strain rate in 1/s.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>eta_eff</strong> (<em>float</em>) – Effective viscosity in Pa·s.</p></li>
+<li><p><strong>eta_dis</strong> (<em>float</em>) – Dislocation creep viscosity in Pa·s.</p></li>
+<li><p><strong>eta_diff</strong> (<em>float</em>) – Diffusion creep viscosity in Pa·s.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.rheolopy.sigma_byerlee">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.rheolopy.</span></span><span class="sig-name descname"><span class="pre">sigma_byerlee</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/rheolopy.html#sigma_byerlee"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.rheolopy.sigma_byerlee" title="Link to this definition"></a></dt>
+<dd><p>Compute the differential stress using Byerlee’s law for a given material, depth, and mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>material</strong> (<a class="reference internal" href="#rheolopy.materials.Material" title="rheolopy.materials.Material"><em>Material</em></a>) – Material object with properties ‘fc_e’, ‘fc_c’, ‘lambda_p’, and ‘rho_b’.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – Depth below surface in meters (z &gt; 0).</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – ‘compression’ or ‘extension’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>sigma_d</strong> – Differential stress in Pascals (Pa).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.rheolopy.sigma_d">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.rheolopy.</span></span><span class="sig-name descname"><span class="pre">sigma_d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">material</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/rheolopy.html#sigma_d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.rheolopy.sigma_d" title="Link to this definition"></a></dt>
+<dd><p>Compute the differential stress for a material at a given depth, temperature,
+and strain rate. Returns the minimum stress required for deformation, considering
+Byerlee’s law, dislocation creep, diffusion creep, and (optionally) Peierls creep.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>material</strong> (<a class="reference internal" href="#rheolopy.materials.Material" title="rheolopy.materials.Material"><em>Material</em></a>) – Material object containing properties required for calculations.</p></li>
+<li><p><strong>z</strong> (<em>float</em>) – Positive depth in meters below the surface (z &gt; 0).</p></li>
+<li><p><strong>temp</strong> (<em>float</em>) – Temperature in Kelvin.</p></li>
+<li><p><strong>strain_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Reference strain rate in 1/s. If None, defaults to 1e-17 1/s.</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – ‘compression’ or ‘extension’.</p></li>
+<li><p><strong>return_all</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return all computed stresses (Byerlee, creep, diffusion, dislocation).</p></li>
+<li><p><strong>return_index</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, return the index of the controlling mechanism.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Sigma</strong> – Differential stress in Pa, or tuple of stresses if return_all is True.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float or tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<section id="module-rheolopy.materials">
+<span id="materials"></span><h2>Materials<a class="headerlink" href="#module-rheolopy.materials" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="rheolopy.materials.Material">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">rheolopy.materials.</span></span><span class="sig-name descname"><span class="pre">Material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc_e</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc_c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambda_pore</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.36</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_disloc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_disloc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q_diff</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_peierls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_peierls</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stress_pd</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/materials.html#Material"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.materials.Material" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Contains a list of materials used for strength computation with exodus
+module. Available properties are</p>
+<section id="meta-properties">
+<h3>Meta properties<a class="headerlink" href="#meta-properties" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>id<span class="classifier">str</span></dt><dd><p>unique id of the material</p>
+</dd>
+<dt>source<span class="classifier">str</span></dt><dd><p>Data source</p>
+</dd>
+<dt>type<span class="classifier">str</span></dt><dd><p>What does your material pretend to be ??</p>
+</dd>
+</dl>
+</section>
+<section id="byerlee-s-law">
+<h3>Byerlee’s law<a class="headerlink" href="#byerlee-s-law" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>fc_e<span class="classifier">float</span></dt><dd><p>Friction coefficient for extension</p>
+</dd>
+<dt>fc_c<span class="classifier">float</span></dt><dd><p>Friction coefficient for compression</p>
+</dd>
+<dt>lambda_pore<span class="classifier">float</span></dt><dd><p>Pore fluid factor</p>
+</dd>
+<dt>rho_b<span class="classifier">float</span></dt><dd><p>Bulk density of the rock / kg/m3</p>
+</dd>
+</dl>
+</section>
+<section id="dislocation-creep">
+<h3>Dislocation creep<a class="headerlink" href="#dislocation-creep" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>a_disloc<span class="classifier">float</span></dt><dd><p>Preexponential scaling factor / Pa^(-n)/s</p>
+</dd>
+<dt>n<span class="classifier">float</span></dt><dd><p>Power law exponent</p>
+</dd>
+<dt>q_disloc<span class="classifier">float</span></dt><dd><p>Activation energy / J/mol</p>
+</dd>
+</dl>
+</section>
+<section id="diffusion-creep">
+<h3>Diffusion creep<a class="headerlink" href="#diffusion-creep" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>a_diff<span class="classifier">float</span></dt><dd><p>Preexponential scaling factor / 1/Pa/s</p>
+</dd>
+<dt>q_diff<span class="classifier">float</span></dt><dd><p>Activation energy / J/mol</p>
+</dd>
+<dt>d<span class="classifier">float</span></dt><dd><p>Grain size / m</p>
+</dd>
+<dt>m<span class="classifier">float</span></dt><dd><p>Grain size exponent</p>
+</dd>
+</dl>
+</section>
+<section id="peierls-creep">
+<h3>Peierls creep<a class="headerlink" href="#peierls-creep" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>eps_peierls<span class="classifier">float</span></dt><dd><p>Reference strain rate / 1/s</p>
+</dd>
+<dt>sigma_peierls<span class="classifier">float</span></dt><dd><p>Critical stress / Pa</p>
+</dd>
+<dt>stress_pd<span class="classifier">float</span></dt><dd><p>Peierls stress constant / Pa</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="rheolopy.materials.Material.get_attributes">
+<span class="sig-name descname"><span class="pre">get_attributes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/materials.html#Material.get_attributes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.materials.Material.get_attributes" title="Link to this definition"></a></dt>
+<dd><p>Return a list of attribute names that are not NaN.</p>
+</dd></dl>
+
+</section>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.materials.get_material_by_id">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.materials.</span></span><span class="sig-name descname"><span class="pre">get_material_by_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/materials.html#get_material_by_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.materials.get_material_by_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.materials.materials">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.materials.</span></span><span class="sig-name descname"><span class="pre">materials</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">database_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'database.json'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/materials.html#materials"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.materials.materials" title="Link to this definition"></a></dt>
+<dd><p>Load materials from a JSON database file.
+If database_path is not absolute, first try to resolve relative to the current working directory.
+If not found, try to resolve relative to the project/module directory.</p>
+</dd></dl>
+
+</section>
+<section id="module-rheolopy.geotherm">
+<span id="geotherm"></span><h2>Geotherm<a class="headerlink" href="#module-rheolopy.geotherm" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="rheolopy.geotherm.Geotherm">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">rheolopy.geotherm.</span></span><span class="sig-name descname"><span class="pre">Geotherm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/geotherm.html#Geotherm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.geotherm.Geotherm" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a geotherm (temperature-depth profile).
+Can be loaded from CSV (filesystem or package data).
+Provides interpolation and unit conversion.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="rheolopy.geotherm.Geotherm.as_array">
+<span class="sig-name descname"><span class="pre">as_array</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/geotherm.html#Geotherm.as_array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.geotherm.Geotherm.as_array" title="Link to this definition"></a></dt>
+<dd><p>Return the raw geotherm data as a numpy array (depth [m], temp [K]).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rheolopy.geotherm.Geotherm.interpolate">
+<span class="sig-name descname"><span class="pre">interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">depths_m</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/geotherm.html#Geotherm.interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.geotherm.Geotherm.interpolate" title="Link to this definition"></a></dt>
+<dd><p>Interpolate temperature at given depth(s) in meters.
+Returns temperature(s) in Kelvin.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-rheolopy.background">
+<span id="background"></span><h2>Background<a class="headerlink" href="#module-rheolopy.background" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="rheolopy.background.BackgroundModel">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">rheolopy.background.</span></span><span class="sig-name descname"><span class="pre">BackgroundModel</span></span><a class="reference internal" href="_modules/rheolopy/background.html#BackgroundModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.background.BackgroundModel" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a geological background model composed of multiple 3D layers.
+Provides methods for initialization, querying, and visualization.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="rheolopy.background.BackgroundModel.add_layer">
+<span class="sig-name descname"><span class="pre">add_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_or_depth</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_id</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/rheolopy/background.html#BackgroundModel.add_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.background.BackgroundModel.add_layer" title="Link to this definition"></a></dt>
+<dd><p>Add a layer to the model, either from a CSV file or a constant depth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csv_or_depth</strong> (<em>str</em><em>, </em><em>float</em><em>, or </em><em>int</em>) – Path to a CSV file (expects columns x, y, z) or a constant depth value.</p></li>
+<li><p><strong>material_id</strong> (<em>str</em><em> or </em><a class="reference internal" href="#rheolopy.materials.Material" title="rheolopy.materials.Material"><em>Material</em></a>) – The material or its id for this layer.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rheolopy.background.BackgroundModel.get_material_at">
+<span class="sig-name descname"><span class="pre">get_material_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_depths</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_z</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/background.html#BackgroundModel.get_material_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.background.BackgroundModel.get_material_at" title="Link to this definition"></a></dt>
+<dd><p>Returns the material at (x_idx, y_idx, z).
+If all_depths=True, returns (z_sampled, materials) where z_sampled is an array of 200 depths
+(from self.z_max to self.z_min) and materials is a list of materials at each depth.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rheolopy.background.BackgroundModel.initialize">
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/background.html#BackgroundModel.initialize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.background.BackgroundModel.initialize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rheolopy.background.BackgroundModel.plot_layer_thickness">
+<span class="sig-name descname"><span class="pre">plot_layer_thickness</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/background.html#BackgroundModel.plot_layer_thickness"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.background.BackgroundModel.plot_layer_thickness" title="Link to this definition"></a></dt>
+<dd><p>Plot the thickness of each layer as a 2D map (x vs y, colored by thickness),
+with a maximum of two layers per row and a single shared colorbar outside the plot grid.
+All subplots use the same axis extent, based on the model’s full x/y range.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rheolopy.background.BackgroundModel.plot_slice">
+<span class="sig-name descname"><span class="pre">plot_slice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">y_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/background.html#BackgroundModel.plot_slice"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.background.BackgroundModel.plot_slice" title="Link to this definition"></a></dt>
+<dd><p>Plot a cross-section at the y_index-th unique y value (default) or x_index-th unique x value.
+Black lines for layer surfaces, colored fill between/below for materials.
+Returns the matplotlib Figure object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rheolopy.background.BackgroundModel.print_layers_at">
+<span class="sig-name descname"><span class="pre">print_layers_at</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">as_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/background.html#BackgroundModel.print_layers_at"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.background.BackgroundModel.print_layers_at" title="Link to this definition"></a></dt>
+<dd><p>Print or return the model’s layers at a given (x_idx, y_idx) index.
+If x_idx or y_idx is None, use the model’s grid midpoints.
+Skips layers thinner than 1 meter.
+If tag=True, return a list of (z_top, z_bottom, mat) for present layers.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="rheolopy.background.Layer3D">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">rheolopy.background.</span></span><span class="sig-name descname"><span class="pre">Layer3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">material_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/background.html#Layer3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.background.Layer3D" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Represents a 3D layer with associated material and grid data.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.background.load_model">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.background.</span></span><span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/background.html#load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.background.load_model" title="Link to this definition"></a></dt>
+<dd><p>Load the background model using the config file and layer files.
+If config_path is not given, looks for a folder called ‘layers’ in the current directory,
+and uses the only .ini file inside as the config. Raises an error if not found or ambiguous.
+All relative paths are resolved relative to the config file location.</p>
+</dd></dl>
+
+</section>
+<section id="module-rheolopy.model_plot">
+<span id="model-plot"></span><h2>Model Plot<a class="headerlink" href="#module-rheolopy.model_plot" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="rheolopy.model_plot.plot_yse">
+<span class="sig-prename descclassname"><span class="pre">rheolopy.model_plot.</span></span><span class="sig-name descname"><span class="pre">plot_yse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strain_rate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geotherm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/rheolopy/model_plot.html#plot_yse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#rheolopy.model_plot.plot_yse" title="Link to this definition"></a></dt>
+<dd><p>Plot the yield strength envelope (YSE) at a given (x, y) index,
+including background layers and the geotherm.
+If x or y is None, uses the grid midpoint.</p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Rheology Explorer’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Tilman May.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
