@@ -1,13 +1,17 @@
 # Rheolopy
 
 [![PyPI version](https://badge.fury.io/py/rheolopy.svg)](https://badge.fury.io/py/rheolopy)
-[![CI Tests](https://github.com/tmay/rheolopy/actions/workflows/tests.yml/badge.svg)](https://github.com/tmay/rheolopy/actions)
+[![CI Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/tmay/rheolopy/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 
 **Rheolopy** is a robust Python package for geological rheology modeling and visualization. It provides tools to construct layered lithospheric models, calculate depth-dependent yield strengths, and compute effective viscosities.
 
 Rheology describes how rocks deform under stress. In the lithosphere, this behavior transitions from brittle failure at shallow depths to ductile creep at greater depths, heavily influenced by temperature, pressure, and strain rate. `rheolopy` programmatically models these transitions by combining experimentally derived flow laws to compute **Yield Strength Envelopes (YSE)**, giving geophysicists a direct window into lithospheric strength profiles.
+
+<p align="center">
+  <img src="docs/images/rheolopy_readme.png" alt="Rheolopy Model Output Visualization" width="700">
+</p>
 
 ---
 
@@ -93,6 +97,15 @@ model = load_model("config.ini")
 model.plot_slice()
 ```
 
+### 🛠️ Bundled Processing Tools
+
+The package also comes with dedicated high-throughput processing scripts located in the `process_rheology/` directory. These tools are designed to evaluate massive 3D geological datasets out-of-the-box:
+
+- **`process_exodus.py`**: Parses and processes complex 3D netCDF/Exodus thermal models, maps structural element blocks to laboratory flow laws, and writes 3D rheological properties (like viscosities and yield strengths) directly back into ParaView-ready formats.
+- **`process_data.py`**: A lightweight batch processor to evaluate structural point-cloud data from simple CSV grids.
+
+For detailed execution instructions and configurations, see the dedicated [Processing Pipeline Documentation](process_rheology/README.md).
+
 ---
 
 ## Physical Models & References
@@ -151,5 +164,5 @@ For questions or direct support, contact [Tilman May](mailto:tmay@gfz.de) at the
 
 <br>
 <p align="center">
-  <img src="docs/images/cat.png" alt="cat" width="150">
+  <img src="docs/images/cat.png" alt="cat" width="450">
 </p>

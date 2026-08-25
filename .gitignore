@@ -95,6 +95,11 @@ ENV/
 # Example outputs
 examples/*.png
 
+# Affinity
+
+*.afdesign
+
+
 # Large datasets in process_rheology (keep scripts, ignore data)
 process_rheology/*.csv
 process_rheology/*.e
