@@ -4,7 +4,7 @@ from .materials import Material
 from .background import BackgroundModel
 
 R = 8.314472  # m2kg/s2/K/mol
-g = 9.81  # m/s2
+g = 9.80665  # m/s2 (standard gravity)
 
 
 def sigma_byerlee(material, z, mode):
@@ -24,13 +24,18 @@ def sigma_byerlee(material, z, mode):
     -------
     sigma_d : float
         Differential stress in Pascals (Pa).
+
+    References
+    ----------
+    Byerlee (1978). Friction of rocks.
+    Sibson (1974). Frictional constraints on thrust, wrench and normal faults.
     """
     if mode == "compression":
         f_f = material.fc_c
     elif mode == "extension":
         f_f = material.fc_e
     else:
-        raise ValueError("Invalid parameter for mode:", mode)
+        raise ValueError(f"Invalid parameter for mode: {mode}")
     lambda_pore = material.lambda_pore
     rho_b = material.rho_b
 
@@ -54,6 +59,10 @@ def eta_dislocation(material, temp, strain_rate):
     -------
     eta_dislocation : float
         Dislocation creep viscosity in Pa·s.
+
+    References
+    ----------
+    Hirth & Kohlstedt (2003). Rheology of the upper mantle and the mantle wedge: A view from the experimentalists.
     """
     a_disloc = material.a_disloc
     n = material.n
@@ -62,7 +71,7 @@ def eta_dislocation(material, temp, strain_rate):
     q_disloc = material.q_disloc
     F_2 = 1 / (2 ** ((n - 1) / n) * 3 ** ((n + 1) / (2 * n)))
 
-    if a_disloc is None:
+    if a_disloc is None or np.isnan(a_disloc):
         return np.nan
 
     return (
@@ -90,6 +99,10 @@ def eta_diffusion(material, temp, strain_rate):
     -------
     eta_diffusion : float
         Diffusion creep viscosity in Pa·s.
+
+    References
+    ----------
+    Hirth & Kohlstedt (2003). Rheology of the upper mantle and the mantle wedge: A view from the experimentalists.
     """
     d = material.d
     m = material.m
@@ -164,6 +177,10 @@ def calc_peierls(material, temp, strain_rate):
     -------
     peierls : float
         Peierls stress in Pascals (Pa).
+
+    References
+    ----------
+    Goetze & Evans (1979). Stress and temperature in the bending lithosphere as constrained by experimental rock mechanics.
     """
     eps_peierls = material.eps_peierls
     sigma_peierls = material.sigma_peierls
@@ -228,7 +245,7 @@ def sigma_d(
         Differential stress in Pa, or tuple of stresses if return_all is True.
     """
     if z < 0:
-        raise ValueError("Depth must be positive. Got z =", z)
+        raise ValueError(f"Depth must be positive. Got z = {z}")
     if strain_rate is None:
         e_prime = 1e-17
     else:
@@ -241,7 +258,6 @@ def sigma_d(
 
     s_byerlee = sigma_byerlee(material, z, mode)
 
-    proplist = material.get_attributes()
     eta_eff, eta_dis, eta_diff = eta_effective(material, temp, e_prime)
     creep = 2 * eta_eff * e_prime
     s_disloc = 2 * eta_dis * e_prime
@@ -252,6 +268,8 @@ def sigma_d(
     else:
         s_peierls = 0
 
+    # Goetze and Evans (1979) state that above 200 MPa, 
+    # stress is sufficient to enable Peierls creep.
     if (creep > 200e6) and (s_peierls > 0) and (s_peierls < creep):
         s_creep = s_peierls
         is_peierls = True

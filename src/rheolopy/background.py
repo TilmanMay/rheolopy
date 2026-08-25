@@ -11,9 +11,12 @@ from .io_util import load_config
 class Layer3D:
     """Represents a 3D layer with associated material and grid data."""
 
-    def __init__(self, csv_path, material_id):
+    def __init__(self, csv_path=None, material_id=None, data=None):
         self.material = material_id
-        self.data = pd.read_csv(csv_path, delimiter=" ")  # expects columns x, y, z
+        if data is not None:
+            self.data = data
+        elif csv_path is not None:
+            self.data = pd.read_csv(csv_path, delimiter=" ")  # expects columns x, y, z
 
 
 class BackgroundModel:
@@ -96,9 +99,7 @@ class BackgroundModel:
                 xx, yy = np.meshgrid(x_vals, y_vals)
                 zz = np.full_like(xx, depth, dtype=float)
                 df = pd.DataFrame({"x": xx.ravel(), "y": yy.ravel(), "z": zz.ravel()})
-            layer = Layer3D.__new__(Layer3D)
-            layer.material = material
-            layer.data = df
+            layer = Layer3D(material_id=material, data=df)
             return layer
 
         if isinstance(csv_or_depth, (int, float)):

@@ -23,6 +23,7 @@ var/
 .installed.cfg
 *.egg
 MANIFEST
+docs/_build/
 
 # Installer logs
 pip-log.txt
@@ -68,15 +69,12 @@ ENV/
 *.bak
 *.tmp
 
-# Project-specific
+# Project-specific: ignore CSV/JSON globally, except package data
 *.csv
 *.json
-*.ini
-# Except package data
 !src/rheolopy/*.csv
 !src/rheolopy/*.json
 !src/rheolopy/*.ini
-
 
 # Ignore test outputs
 *.out
@@ -87,7 +85,29 @@ ENV/
 *.swp
 *.swo
 
-
 # Ignore notebook outputs
 *.nbconvert.ipynb
 
+# Large data files
+*.e
+*.nc
+
+# Example outputs
+examples/*.png
+
+# Large datasets in process_rheology (keep scripts, ignore data)
+process_rheology/*.csv
+process_rheology/*.e
+process_rheology/output/
+
+# LaTeX and templates
+template.tex
+Theoretical background/
+
+# Agent instruction files
+AGENTS.md
+GOALS.md
+INSTRUCTIONS.md
+PLANS.md
+WORKFLOW.md
+MEMORY.md

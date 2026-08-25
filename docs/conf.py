@@ -1,8 +1,8 @@
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../src'))
+sys.path.insert(0, os.path.abspath('../src'))
 
-project = 'Rheology Explorer'
+project = 'rheolopy'
 copyright = '2026, Tilman May'
 author = 'Tilman May'
 release = '0.1.0'

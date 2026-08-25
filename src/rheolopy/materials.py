@@ -1,12 +1,12 @@
+import os
 import numpy as np
 import pandas as pd
-import os
+from typing import List, Optional
 
 
 class Material:
     """
-    Contains a list of materials used for strength computation with exodus
-    module. Available properties are
+    Contains a list of materials used for strength computation. Available properties are
 
     Meta properties
     ---------------
@@ -60,23 +60,23 @@ class Material:
 
     def __init__(
         self,
-        id,
-        source="",
-        type="",
-        fc_e=0.75,
-        fc_c=2.0,
-        lambda_pore=0.36,
-        rho_b=None,
-        a_disloc=None,
-        n=None,
-        q_disloc=None,
-        a_diff=None,
-        q_diff=None,
-        d=None,
-        m=None,
-        eps_peierls=None,
-        sigma_peierls=None,
-        stress_pd=None,
+        id: str,
+        source: str = "",
+        type: str = "",
+        fc_e: float = 0.75,
+        fc_c: float = 2.0,
+        lambda_pore: float = 0.36,
+        rho_b: float = np.nan,
+        a_disloc: float = np.nan,
+        n: float = np.nan,
+        q_disloc: float = np.nan,
+        a_diff: float = np.nan,
+        q_diff: float = np.nan,
+        d: float = np.nan,
+        m: float = np.nan,
+        eps_peierls: float = np.nan,
+        sigma_peierls: float = np.nan,
+        stress_pd: float = np.nan,
     ):
         self.id = id
         self.source = source
@@ -97,7 +97,7 @@ class Material:
         self.sigma_peierls = sigma_peierls
         self.stress_pd = stress_pd
 
-    def get_attributes(self):
+    def get_attributes(self) -> list:
         """Return a list of attribute names that are not NaN."""
         non_nan_attributes = []
         for attr, value in vars(self).items():
@@ -109,15 +109,12 @@ class Material:
         return f"\n{self.type}, {self.source}"
 
 
-def materials(database_path="database.json"):
+def materials(database_path: str = "database.json") -> List[Material]:
     """
     Load materials from a JSON database file.
     If database_path is not absolute, first try to resolve relative to the current working directory.
     If not found, try to resolve relative to the project/module directory.
     """
-    import os
-    import pandas as pd
-
     # Try current working directory first
     if not os.path.isabs(database_path):
         if os.path.exists(database_path):
@@ -140,7 +137,7 @@ def materials(database_path="database.json"):
     return r
 
 
-def get_material_by_id(mats, material_id):
+def get_material_by_id(mats: List[Material], material_id: str) -> Optional[Material]:
     material_dict = {mat.id: mat for mat in mats}
     if material_id in material_dict:
         found_material = material_dict[material_id]

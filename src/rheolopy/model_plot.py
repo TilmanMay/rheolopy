@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 from cmcrameri import cm
 
 from .io_util import load_config
@@ -7,12 +8,35 @@ from .geotherm import Geotherm
 
 import matplotlib.pyplot as plt
 
+logger = logging.getLogger(__name__)
+
 
 def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     """
-    Plot the yield strength envelope (YSE) at a given (x, y) index,
-    including background layers and the geotherm.
-    If x or y is None, uses the grid midpoint.
+    Plot the yield strength envelope (YSE) at a given (x, y) index.
+
+    Includes background layers as colored bands and the geotherm overlay.
+    If x or y is None, the function uses the grid midpoint.
+
+    Parameters
+    ----------
+    model : BackgroundModel
+        The geological model.
+    x : int, optional
+        Grid index for the x-coordinate.
+    y : int, optional
+        Grid index for the y-coordinate.
+    strain_rate : float, optional
+        Reference strain rate in 1/s. Defaults to config value.
+    ax : matplotlib.axes.Axes, optional
+        Axes to plot on. If None, a new figure is created.
+    geotherm : Geotherm, optional
+        Geotherm instance to use for temperature. Defaults to config value.
+
+    Returns
+    -------
+    fig : matplotlib.figure.Figure or None
+        The created Figure if `ax` was None, else None.
     """
     config = getattr(model, "config", None) or load_config("config.ini")
     if strain_rate is None:
@@ -45,16 +69,13 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     if not (0 <= y_idx < len(y_vals)):
         raise IndexError(f"y index {y_idx} out of bounds (0 to {len(y_vals)-1})")
 
-    # Find nearest x and y in the grid
-    # Find nearest grid values
-    x_val = x_vals[(np.abs(x_vals - x_vals[x_idx])).argmin()]
-    y_val = y_vals[(np.abs(y_vals - y_vals[y_idx])).argmin()]
+    x_val = x_vals[x_idx]
+    y_val = y_vals[y_idx]
 
-    print(f"Plotting YSE at (x={x_val}, y={y_val})")
+    logger.info(f"Plotting YSE at (x={x_val}, y={y_val})")
 
     # Get top and bottom z at this (x, y)
     top_layer = model.layers[0]
-    # Get top and bottom z at this (x, y)
     row = top_layer.data[
         (top_layer.data["x"] == x_val) & (top_layer.data["y"] == y_val)
     ]

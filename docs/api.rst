@@ -33,3 +33,10 @@ Model Plot
    :members:
    :undoc-members:
    :show-inheritance:
+
+IO Utilities
+------------
+.. automodule:: rheolopy.io_util
+   :members:
+   :undoc-members:
+   :show-inheritance:

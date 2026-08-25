@@ -1,0 +1,3 @@
+include src/rheolopy/config.ini
+include src/rheolopy/database.json
+include src/rheolopy/geotherm.csv
