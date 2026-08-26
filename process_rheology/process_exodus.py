@@ -35,7 +35,7 @@ if _src_dir not in sys.path:
     sys.path.insert(0, _src_dir)
 
 from rheolopy import materials as load_materials, get_material_by_id
-from rheolopy.rheolopy import (
+from rheolopy.core import (
     sigma_byerlee,
     eta_effective as rheo_eta_effective,
     calc_peierls,
@@ -236,8 +236,8 @@ def evaluate_point(zp, temp_K, props, is_crust, eta_low, eta_up, effective_rho):
     orig_rho = mat.rho_b
     mat.rho_b = effective_rho
 
-    depth = abs(zp)  # Using absolute Z as depth below surface
-    brittle = sigma_byerlee(mat, depth, "compression")
+    depth_z = -abs(zp)  # Enforce negative depth convention
+    brittle = sigma_byerlee(mat, depth_z, "compression")
 
     eta_eff_val, eta_dis_val, eta_diff_val = rheo_eta_effective(
         mat, temp_K, strain_rate

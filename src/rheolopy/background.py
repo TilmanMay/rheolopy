@@ -583,7 +583,6 @@ class BackgroundModel:
             location="right",
         )
         cbar.set_label("Thickness in m")
-        plt.show()
         return fig
 
     def __repr__(self):

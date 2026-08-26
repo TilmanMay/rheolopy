@@ -58,7 +58,7 @@ mats = materials()
 olivine = get_material_by_id(mats, "olivine_hirth_dry")
 
 # 2. Define geological conditions
-depth = 20000.0       # meters (20 km)
+depth = -20000.0      # meters (20 km below surface)
 temp = 800.0          # Kelvin
 strain_rate = 1e-15   # 1/s
 
@@ -81,9 +81,9 @@ database = "database.json"
 
 [Model]
 layers = [
-    [15000, "quartzite_hansen_wet"],
-    [35000, "diabase_maryland_strong"],
-    [100000, "olivine_hirth_dry"]
+    [0, "quartzite_hansen_wet"],
+    [-15000, "diabase_maryland_strong"],
+    [-35000, "olivine_hirth_dry"]
   ]
 ```
 
@@ -161,7 +161,7 @@ The built-in material database (`database.json`) includes the following predefin
 For a complete list of classes and functions, see the [API Reference](API.md).
 
 Primary modules include:
-- `rheolopy.rheolopy`: Core rheology physics and stress calculations.
+- `rheolopy.core`: Core rheology physics and stress calculations.
 - `rheolopy.background`: 3D layered background models (`BackgroundModel`).
 - `rheolopy.materials`: Material definitions and JSON database loading.
 - `rheolopy.geotherm`: Interpolation and handling of thermal profiles.

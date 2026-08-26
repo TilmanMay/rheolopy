@@ -90,8 +90,7 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     zs = np.linspace(0, zmin, 300)
 
     # Load geotherm and interpolate to this (x, y)
-
-    T = geotherm_obj.interpolate(-zs)
+    T = geotherm_obj.interpolate(zs)
 
     # Compute YSE
     sigma_plot, z_plot = compute_dsigma(

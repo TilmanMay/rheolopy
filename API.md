@@ -6,7 +6,7 @@ This document provides a reference for the public API of the `rheolopy` package.
 
 ## Core Rheology Computations
 
-### `rheolopy.rheolopy`
+### `rheolopy.core`
 
 #### `sigma_byerlee(material, z, mode)`
 
@@ -17,7 +17,7 @@ Compute the differential stress using Byerlee's law.
 | Name | Type | Description |
 |------|------|-------------|
 | `material` | `Material` | Material object with `fc_e`, `fc_c`, `lambda_pore`, `rho_b`. |
-| `z` | `float` | Depth below surface in meters (z > 0). |
+| `z` | `float` | Depth in meters (z <= 0, surface = 0). |
 | `mode` | `str` | `'compression'` or `'extension'`. |
 
 **Returns:** `float` — Differential stress in Pa.
@@ -97,7 +97,7 @@ Compute the differential stress at a given depth and temperature, considering By
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
 | `material` | `Material` | — | Material object. |
-| `z` | `float` | — | Depth in meters (z > 0). |
+| `z` | `float` | — | Depth in meters (z <= 0, surface = 0). |
 | `temp` | `float` | — | Temperature in Kelvin. |
 | `strain_rate` | `float` | `1e-17` | Strain rate in 1/s. |
 | `mode` | `str` | — | `'compression'` or `'extension'`. |
@@ -117,7 +117,7 @@ Compute differential stress for a `Material` or `BackgroundModel` at given depth
 | Name | Type | Description |
 |------|------|-------------|
 | `background` | `Material` or `BackgroundModel` | The model or material to compute stresses for. |
-| `z` | `float` or `array-like` | Depth(s) in meters (z > 0). |
+| `z` | `float` or `array-like` | Depth(s) in meters (z <= 0, surface = 0). |
 | `T` | `float` or `array-like` | Temperature(s) in Kelvin. |
 | `strain_rate` | `float` | Strain rate in 1/s. |
 | `x_idx` | `int`, optional | x grid index (for `BackgroundModel` only). |
@@ -204,13 +204,13 @@ Represents a temperature–depth profile. Loads from CSV (expects columns: depth
 
 Load a geotherm from a CSV file. If `path` is `None`, resolves from config. If `config` is also `None`, uses the bundled default config and geotherm.
 
-##### `interpolate(depths_m)`
+##### `interpolate(z)`
 
 Interpolate temperature at given depth(s).
 
 | Name | Type | Description |
 |------|------|-------------|
-| `depths_m` | `float` or `ndarray` | Depth(s) in meters. |
+| `z` | `float` or `ndarray` | Depth(s) in meters (z <= 0). |
 
 **Returns:** Temperature(s) in Kelvin.
 

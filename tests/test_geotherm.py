@@ -14,11 +14,11 @@ def test_geotherm_initialization_and_interpolation(tmp_path):
     temp = geo.interpolate(0)
     assert np.isclose(temp, 273.15)
     
-    temp2 = geo.interpolate(10000)
+    temp2 = geo.interpolate(-10000)
     assert np.isclose(temp2, 773.15)
 
     # Test interpolation at intermediate point
-    temp_mid = geo.interpolate(5000)
+    temp_mid = geo.interpolate(-5000)
     assert np.isclose(temp_mid, (273.15 + 773.15) / 2)
 
 def test_geotherm_as_array(tmp_path):

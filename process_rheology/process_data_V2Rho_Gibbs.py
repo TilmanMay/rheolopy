@@ -66,10 +66,11 @@ def main():
     for i in range(len(data)):
         # Extract data: depth in km (column 2), temperature in °C (column 4)
         depth_m = data[i, 2] * 1e3  # Convert km to m
+        depth_z = -abs(depth_m)     # Enforce negative depth convention
         temp_k = data[i, 4] + 273.15  # Convert °C to K
 
         # Compute differential stress for compression and extension
-        s_d_c, s_d_e = compute_dsigma(mat, depth_m, temp_k, strain_rate)
+        s_d_c, s_d_e = compute_dsigma(mat, depth_z, temp_k, strain_rate)
 
         dsigma_c[i] = s_d_c
         dsigma_e[i] = s_d_e
