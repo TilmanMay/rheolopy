@@ -15,7 +15,7 @@ class Material:
     source : str
         Data source
     type : str
-        What does your material pretend to be ??
+        Rock type description (e.g. 'olivine dry', 'quartzite wet').
 
     Byerlee's law
     -------------
@@ -64,7 +64,7 @@ class Material:
         source: str = "",
         type: str = "",
         fc_e: float = 0.75,
-        fc_c: float = 2.0,
+        fc_c: float = 3.0,
         lambda_pore: float = 0.36,
         rho_b: float = np.nan,
         a_disloc: float = np.nan,

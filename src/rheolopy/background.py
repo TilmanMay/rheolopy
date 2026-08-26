@@ -2,6 +2,7 @@ import json
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 from cmcrameri import cm
 
 from .materials import get_material_by_id, materials
@@ -335,7 +336,6 @@ class BackgroundModel:
             # Draw black lines for each layer
             for ys, zs, _ in layer_yz:
                 ax.plot(ys, zs, color="black", linewidth=1.5)
-            from matplotlib.patches import Patch
 
             handles = [Patch(color=color_map[mat], label=mat) for mat in all_mats]
             ax.legend(
@@ -349,7 +349,6 @@ class BackgroundModel:
             ax.set_ylim(z_min, z_max)
             ax.set_xlim(y_min, y_max)
             ax.set_title(f"Cross-section at x index={x_index} (x={x_val})")
-            plt.show()
             return fig
 
         # Default: y_index cross-section
@@ -425,8 +424,6 @@ class BackgroundModel:
         for xs, zs, _ in layer_xz:
             ax.plot(xs, zs, color="black", linewidth=1.5)
 
-        from matplotlib.patches import Patch
-
         handles = [Patch(color=color_map[mat], label=mat) for mat in all_mats]
         ax.legend(
             handles=handles,
@@ -439,7 +436,6 @@ class BackgroundModel:
         ax.set_ylim(z_min, z_max)
         ax.set_xlim(x_min, x_max)
         ax.set_title(f"Cross-section at y index={y_index} (y={y_val})")
-        plt.show()
         return fig
 
     def print_layers_at(self, x_idx=None, y_idx=None, as_string=False, tag=False):

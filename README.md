@@ -1,7 +1,6 @@
 # Rheolopy
 
 [![PyPI version](https://badge.fury.io/py/rheolopy.svg)](https://badge.fury.io/py/rheolopy)
-[![CI Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/tmay/rheolopy/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 
@@ -97,7 +96,7 @@ model = load_model("config.ini")
 model.plot_slice()
 ```
 
-### 🛠️ Bundled Processing Tools
+### Bundled Processing Tools
 
 The package also comes with dedicated high-throughput processing scripts located in the `process_rheology/` directory. These tools are designed to evaluate massive 3D geological datasets out-of-the-box:
 
@@ -117,6 +116,43 @@ This package computes the minimum stress required for deformation at a given dep
 * **Peierls Creep:** Low-temperature plasticity activated at high stresses (> 200 MPa), governed by the exponential flow law (Goetze & Evans, 1979).
 
 > **Note:** For a complete mathematical derivation of the implemented flow laws and the exact physical formulas used in this package, please refer to our [Theoretical Background Documentation](docs/theoretical_background.pdf).
+
+### Material Database
+
+The built-in material database (`database.json`) includes the following predefined rheologies:
+
+| ID | Type | Source |
+|---|---|---|
+| olivine_karato_dry | olivine dry | Karato & Wu (1993) |
+| olivine_karato_wet | olivine wet | Karato & Wu (1993) |
+| olivine_hirth_dry | olivine dry | Hirth & Kohlstedt (2003) |
+| olivine_hirth_wet | olivine wet | Hirth & Kohlstedt (2003) |
+| olivine_ranalli | olivine | Ranalli (1982) |
+| rock_salt_arieli | rock salt | Arieli et al. (1982) |
+| quartzite_kirby_dry | quartzite dry | Kirby (1983) |
+| quartzite_shelton_dry | quartzite dry | Shelton & Tullis (1981) |
+| quartzite_koch_dry | quartzite dry | Koch (1983) |
+| quartzite_hansen_dry | quartzite dry | Hansen & Carter (1982) |
+| quartzite_jaoul_dry | quartzite dry | Jaoul et al. (1983) |
+| quartzite_kirby_wet | quartzite wet | Kirby (1983) |
+| quartzite_koch_wet | quartzite wet | Koch (1983) |
+| quartzite_kronenberg_wet | quartzite wet | Kronenberg & Tullis (1983) |
+| quartzite_hansen_wet | quartzite wet | Hansen & Carter (1982) |
+| quartzite_gleason_wet | quartzite wet | Gleason & Tullis (1995) |
+| quartzite_gleason_melt | quartzite | Gleason & Tullis (1995) |
+| granite_kirby_dry | granite dry | Kirby (1983) |
+| granite_carter_dry | granite dry | Carter et al. (1981) |
+| granite_hansen_dry | granite dry | Hansen & Carter (1982) |
+| granite_hansen_wet | granite wet | Hansen & Carter (1982) |
+| albite_shelton | albite rock | Shelton & Tullis (1981) |
+| anorthosite_shelton | anorthosite | Shelton & Tullis (1981) |
+| quartz_diorite_hansen | quartz diorite | Hansen & Carter (1982) |
+| diorite_ranalli_wet | diorite wet | Ranalli (1995) |
+| diabase_shelton_dry | diabase dry | Shelton & Tullis (1981) |
+| diabase_columbia_weak | diabase weak | Mackwell et al. (1998) |
+| diabase_maryland_strong | diabase strong | Mackwell et al. (1998) |
+| granulite_felsic_wilks | granulite felsic | Wilks & Carter (1990) |
+| granulite_mafic_wilks | granulite mafic | Wilks & Carter (1990) |
 
 ---
 

@@ -338,5 +338,5 @@ The package ships with:
 | File | Description |
 |------|-------------|
 | `config.ini` | Default configuration (strain rate, paths to geotherm and database). |
-| `database.json` | Material database with 21 rock types and their rheological parameters. |
+| `database.json` | Material database with 29 entries covering various rock types and their rheological parameters. |
 | `geotherm.csv` | Default continental geotherm (McKenzie et al. 2005), columns: depth (km), temperature (°C). |

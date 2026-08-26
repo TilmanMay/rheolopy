@@ -1,29 +1,54 @@
+"""
+Core rheology physics and stress calculations.
+
+All depth parameters (z) follow the convention: z <= 0, with surface at z = 0
+and increasing depth as increasingly negative values (meters below surface).
+
+References
+----------
+Byerlee (1978). Friction of rocks.
+Sibson (1974). Frictional constraints on thrust, wrench and normal faults.
+Hirth & Kohlstedt (2003). Rheology of the upper mantle and the mantle wedge.
+Goetze & Evans (1979). Stress and temperature in the bending lithosphere.
+"""
+
+from typing import Optional, Union
 import numpy as np
 
 from .materials import Material
 from .background import BackgroundModel
 
-R = 8.314472  # m2kg/s2/K/mol
-g = 9.80665  # m/s2 (standard gravity)
+# ── Physical constants ─────────────────────────────────────────────────────────
+R = 8.314472  # J/(mol·K)  — universal gas constant
+g = 9.80665  # m/s²       — standard gravitational acceleration
+
+# ── Default model parameters ──────────────────────────────────────────────────
+DEFAULT_STRAIN_RATE = 1e-17   # 1/s — typical geological strain rate
+PEIERLS_THRESHOLD = 200e6     # Pa  — stress above which Peierls creep activates
 
 
-def sigma_byerlee(material, z, mode):
+def sigma_byerlee(
+    material: Material,
+    z: float,
+    mode: str,
+) -> float:
     """
-    Compute the differential stress using Byerlee's law for a given material, depth, and mode.
+    Compute the differential stress using Byerlee's law (Sibson, 1974).
 
     Parameters
     ----------
     material : Material
-        Material object with properties 'fc_e', 'fc_c', 'lambda_p', and 'rho_b'.
+        Material object with properties ``fc_e``, ``fc_c``, ``lambda_pore``,
+        and ``rho_b``.
     z : float
-        Depth below surface in meters (z > 0).
+        Depth in meters (z <= 0, surface = 0).
     mode : str
-        'compression' or 'extension'.
+        ``'compression'`` or ``'extension'``.
 
     Returns
     -------
     sigma_d : float
-        Differential stress in Pascals (Pa).
+        Differential stress in Pa.
 
     References
     ----------
@@ -39,17 +64,21 @@ def sigma_byerlee(material, z, mode):
     lambda_pore = material.lambda_pore
     rho_b = material.rho_b
 
-    return f_f * rho_b * g * z * (1.0 - lambda_pore)
+    return f_f * rho_b * g * abs(z) * (1.0 - lambda_pore)
 
 
-def eta_dislocation(material, temp, strain_rate):
+def eta_dislocation(
+    material: Material,
+    temp: float,
+    strain_rate: float,
+) -> float:
     """
-    Compute the viscosity for dislocation creep at specified temperature and strain rate.
+    Compute the viscosity for dislocation creep.
 
     Parameters
     ----------
     material : Material
-        Material object with properties 'a_disloc', 'n', 'q_disloc', and optionally 'd' (grain size).
+        Material object with properties ``a_disloc``, ``n``, ``q_disloc``.
     temp : float
         Temperature in Kelvin.
     strain_rate : float
@@ -62,34 +91,38 @@ def eta_dislocation(material, temp, strain_rate):
 
     References
     ----------
-    Hirth & Kohlstedt (2003). Rheology of the upper mantle and the mantle wedge: A view from the experimentalists.
+    Hirth & Kohlstedt (2003). Rheology of the upper mantle and the mantle
+    wedge: A view from the experimentalists.
     """
     a_disloc = material.a_disloc
     n = material.n
-    d = material.d
-    m = 0  # dislocation creep does not depend on grain size
     q_disloc = material.q_disloc
-    F_2 = 1 / (2 ** ((n - 1) / n) * 3 ** ((n + 1) / (2 * n)))
+    # Dislocation creep is grain-size independent (m = 0), so the d^(-m/n)
+    # term evaluates to 1.0 and is omitted from the computation.
+    F = 1 / (2 ** ((n - 1) / n) * 3 ** ((n + 1) / (2 * n)))
 
     if a_disloc is None or np.isnan(a_disloc):
         return np.nan
 
     return (
-        F_2
-        * 1
-        / ((a_disloc) ** (1 / n) * d ** (-(m) / (n)) * strain_rate ** ((n - 1) / (n)))
+        F
+        / (a_disloc ** (1 / n) * strain_rate ** ((n - 1) / n))
         * np.exp(q_disloc / n / R / temp)
     )
 
 
-def eta_diffusion(material, temp, strain_rate):
+def eta_diffusion(
+    material: Material,
+    temp: float,
+    strain_rate: float,
+) -> float:
     """
-    Compute the viscosity for diffusion creep at specified temperature and strain rate.
+    Compute the viscosity for diffusion creep.
 
     Parameters
     ----------
     material : Material
-        Material object with properties 'd', 'm', 'a_diff', and 'q_diff'.
+        Material object with properties ``d``, ``m``, ``a_diff``, ``q_diff``.
     temp : float
         Temperature in Kelvin.
     strain_rate : float
@@ -102,7 +135,8 @@ def eta_diffusion(material, temp, strain_rate):
 
     References
     ----------
-    Hirth & Kohlstedt (2003). Rheology of the upper mantle and the mantle wedge: A view from the experimentalists.
+    Hirth & Kohlstedt (2003). Rheology of the upper mantle and the mantle
+    wedge: A view from the experimentalists.
     """
     d = material.d
     m = material.m
@@ -110,23 +144,31 @@ def eta_diffusion(material, temp, strain_rate):
     q_diff = material.q_diff
     n = 1
 
-    F_2 = 3 / (2 ** ((n - 1) / n) * 3 ** ((n + 1) / (2 * n)))
+    # For diffusion creep (n = 1), F includes an additional factor of 3
+    # to account for the isotropic nature of diffusional processes
+    # (Ranalli, 1995, p. 77). With n = 1 this evaluates to:
+    # F = 3 / (2^0 * 3^1) = 1.0
+    # The formula is kept in its general form for traceability.
+    F = 3 / (2 ** ((n - 1) / n) * 3 ** ((n + 1) / (2 * n)))
 
     if a_diff is None or np.isnan(a_diff):
         return np.nan
     else:
         return (
-            F_2
-            * 1
-            / ((a_diff) ** (1 / n) * d ** (-(m) / (n)) * strain_rate ** ((n - 1) / (n)))
+            F
+            / (a_diff ** (1 / n) * d ** (-m / n) * strain_rate ** ((n - 1) / n))
             * np.exp(q_diff / n / R / temp)
         )
 
 
-def eta_effective(material, temp, strain_rate):
+def eta_effective(
+    material: Material,
+    temp: float,
+    strain_rate: float,
+) -> tuple[float, float, float]:
     """
-    Compute the effective viscosity for a material at specified temperature and strain rate.
-    Uses the harmonic mean of dislocation and diffusion creep viscosities.
+    Compute the effective viscosity using the harmonic mean of dislocation
+    and diffusion creep viscosities.
 
     Parameters
     ----------
@@ -160,14 +202,22 @@ def eta_effective(material, temp, strain_rate):
     return eta_eff, eta_dis, eta_diff
 
 
-def calc_peierls(material, temp, strain_rate):
+def calc_peierls(
+    material: Material,
+    temp: float,
+    strain_rate: float,
+) -> float:
     """
-    Compute the Peierls stress for a material at given temperature and strain rate.
+    Compute the Peierls stress for low-temperature plasticity.
+
+    The activation energy for Peierls creep (Q_Peierls) is dynamically
+    evaluated to ensure continuity at the transition from dislocation creep.
 
     Parameters
     ----------
     material : Material
-        Material object with properties 'a_disloc', 'n', 'q_disloc'.
+        Material object with properties ``eps_peierls``, ``sigma_peierls``,
+        ``stress_pd``, ``a_disloc``, ``n``, ``q_disloc``.
     temp : float
         Temperature in Kelvin.
     strain_rate : float
@@ -176,11 +226,13 @@ def calc_peierls(material, temp, strain_rate):
     Returns
     -------
     peierls : float
-        Peierls stress in Pascals (Pa).
+        Peierls stress in Pa. Returns 0.0 if Peierls parameters are
+        unavailable or the computed stress is non-positive.
 
     References
     ----------
-    Goetze & Evans (1979). Stress and temperature in the bending lithosphere as constrained by experimental rock mechanics.
+    Goetze & Evans (1979). Stress and temperature in the bending lithosphere
+    as constrained by experimental rock mechanics.
     """
     eps_peierls = material.eps_peierls
     sigma_peierls = material.sigma_peierls
@@ -209,45 +261,49 @@ def calc_peierls(material, temp, strain_rate):
 
 
 def sigma_d(
-    material,
-    z,
-    temp,
-    strain_rate=None,
-    mode=None,
-    return_all=False,
-    return_index=False,
-):
+    material: Material,
+    z: float,
+    temp: float,
+    strain_rate: Optional[float] = None,
+    mode: Optional[str] = None,
+    return_all: bool = False,
+    return_index: bool = False,
+) -> Union[float, tuple]:
     """
-    Compute the differential stress for a material at a given depth, temperature,
-    and strain rate. Returns the minimum stress required for deformation, considering
-    Byerlee's law, dislocation creep, diffusion creep, and (optionally) Peierls creep.
+    Compute the differential stress for a material at a given depth,
+    temperature, and strain rate.
+
+    Returns the minimum stress required for deformation, considering
+    Byerlee's law, dislocation creep, diffusion creep, and (optionally)
+    Peierls creep.
 
     Parameters
     ----------
     material : Material
         Material object containing properties required for calculations.
     z : float
-        Positive depth in meters below the surface (z > 0).
+        Depth in meters (z <= 0, surface = 0).
     temp : float
         Temperature in Kelvin.
     strain_rate : float, optional
-        Reference strain rate in 1/s. If None, defaults to 1e-17 1/s.
+        Reference strain rate in 1/s. Defaults to ``DEFAULT_STRAIN_RATE``.
     mode : str, optional
-        'compression' or 'extension'.
+        ``'compression'`` or ``'extension'``.
     return_all : bool, optional
-        If True, return all computed stresses (Byerlee, creep, diffusion, dislocation).
+        If True, return all computed stresses (Byerlee, creep, diffusion,
+        dislocation).
     return_index : bool, optional
         If True, return the index of the controlling mechanism.
 
     Returns
     -------
-    Sigma : float or tuple
+    sigma : float or tuple
         Differential stress in Pa, or tuple of stresses if return_all is True.
     """
-    if z < 0:
-        raise ValueError(f"Depth must be positive. Got z = {z}")
+    if z > 0:
+        raise ValueError(f"Depth must be <= 0 (negative downward). Got z = {z}")
     if strain_rate is None:
-        e_prime = 1e-17
+        e_prime = DEFAULT_STRAIN_RATE
     else:
         e_prime = strain_rate
     include_peierls = (
@@ -268,9 +324,9 @@ def sigma_d(
     else:
         s_peierls = 0
 
-    # Goetze and Evans (1979) state that above 200 MPa, 
-    # stress is sufficient to enable Peierls creep.
-    if (creep > 200e6) and (s_peierls > 0) and (s_peierls < creep):
+    # Goetze and Evans (1979): above the Peierls threshold,
+    # dislocation glide supersedes standard dislocation creep.
+    if (creep > PEIERLS_THRESHOLD) and (s_peierls > 0) and (s_peierls < creep):
         s_creep = s_peierls
         is_peierls = True
     else:
@@ -291,26 +347,28 @@ def sigma_d(
 
 
 def compute_dsigma(
-    background,
-    z,
-    T,
-    strain_rate,
-    x_idx=None,
-    y_idx=None,
-    return_all=False,
-    return_index=False,
-):
+    background: Union[Material, BackgroundModel],
+    z: Union[float, np.ndarray],
+    T: Union[float, np.ndarray],
+    strain_rate: float,
+    x_idx: Optional[int] = None,
+    y_idx: Optional[int] = None,
+    return_all: bool = False,
+    return_index: bool = False,
+) -> Union[tuple, np.ndarray]:
     """
-    Compute differential stress for a given material or background model at depths z and
-    temperatures T. Computes for both compression and extension and returns arrays.
-    Handles both scalar and array input for z and T (no vectorization).
+    Compute differential stress for a Material or BackgroundModel at
+    depth(s) z and temperature(s) T.
+
+    Computes for both compression and extension. Compression stresses are
+    returned as negative, extension as positive.
 
     Parameters
     ----------
     background : Material or BackgroundModel
         Material object or BackgroundModel instance.
     z : float or array-like
-        Depth(s) in meters below the surface (z > 0).
+        Depth(s) in meters (z <= 0, surface = 0).
     T : float or array-like
         Temperature(s) in Kelvin.
     strain_rate : float
@@ -320,16 +378,17 @@ def compute_dsigma(
     y_idx : int, optional
         y grid index for BackgroundModel (ignored for Material).
     return_all : bool, optional
-        If True, return all computed stresses (Byerlee, creep, diffusion, dislocation).
+        If True, return all computed stresses.
     return_index : bool, optional
         If True, return the index of the controlling mechanism.
 
     Returns
     -------
     dsigma : tuple or ndarray
-        For scalar input: (compression, extension) stress in Pa.
-        For array input: (dsigma, depths) where dsigma is a concatenated array of
-        compression and extension stresses, and depths is the corresponding array of depths.
+        For scalar input: ``(compression, extension)`` stress in Pa.
+        For array input: ``(dsigma, depths)`` where dsigma is a concatenated
+        array of compression (negative) and extension (positive) stresses,
+        and depths is the corresponding array.
     """
     if isinstance(background, BackgroundModel):
         # Use the correct (x_idx, y_idx) for the top boundary
@@ -338,7 +397,9 @@ def compute_dsigma(
         top_z = top_layer.data[(top_layer.data["x"] == x) & (top_layer.data["y"] == y)][
             "z"
         ].values[0]
-        z_for_model = -(top_z - z)
+        # z is already negative (depth convention); z_for_model adjusts
+        # relative to the model's top surface for material lookup
+        z_for_model = z - top_z
     else:
         z_for_model = z
 
@@ -346,7 +407,7 @@ def compute_dsigma(
         if isinstance(background, Material):
             mat = background
         elif isinstance(background, BackgroundModel):
-            mat = background.get_material_at(x_idx=x_idx, y_idx=y_idx, z=-z_for_model)
+            mat = background.get_material_at(x_idx=x_idx, y_idx=y_idx, z=z_for_model)
         else:
             raise ValueError("background must be Material or BackgroundModel")
         if mat is None:
@@ -396,10 +457,10 @@ def compute_dsigma(
         for i in range(len(z)):
             if isinstance(background, Material):
                 mat = background
-                z_model = z[i]
             elif isinstance(background, BackgroundModel):
-                z_model = z_for_model[i]
-                mat = background.get_material_at(x_idx=x_idx, y_idx=y_idx, z=-z_model)
+                mat = background.get_material_at(
+                    x_idx=x_idx, y_idx=y_idx, z=z_for_model[i]
+                )
             else:
                 raise ValueError("background must be Material or BackgroundModel")
             

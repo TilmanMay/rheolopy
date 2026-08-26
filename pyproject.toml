@@ -35,6 +35,9 @@ dev = [
     "sphinx",
     "sphinx-rtd-theme"
 ]
+processing = [
+    "netCDF4"
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

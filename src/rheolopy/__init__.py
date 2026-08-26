@@ -24,7 +24,7 @@ from .materials import (
 from .model_plot import (
     plot_yse,
 )
-from .rheolopy import (
+from .core import (
     sigma_byerlee,
     eta_dislocation,
     eta_diffusion,

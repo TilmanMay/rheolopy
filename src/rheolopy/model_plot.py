@@ -3,7 +3,7 @@ import logging
 from cmcrameri import cm
 
 from .io_util import load_config
-from .rheolopy import compute_dsigma
+from .core import compute_dsigma
 from .geotherm import Geotherm
 
 import matplotlib.pyplot as plt
@@ -95,7 +95,7 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
 
     # Compute YSE
     sigma_plot, z_plot = compute_dsigma(
-        model, -zs, T, strain_rate, x_idx=x_idx, y_idx=y_idx
+        model, zs, T, strain_rate, x_idx=x_idx, y_idx=y_idx
     )
     z_plot_shifted = z_plot - top_z
 
@@ -128,7 +128,7 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     # Plot YSE
     ax.plot(
         sigma_plot / 1e9,
-        z_plot_shifted / 1000,
+        -z_plot_shifted / 1000,
         label="YSE",
         color="cornflowerblue",
         zorder=2,

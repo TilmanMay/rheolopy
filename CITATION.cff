@@ -5,6 +5,18 @@ authors:
   given-names: "Tilman"
   orcid: "https://orcid.org/0009-0002-6923-3622"
   affiliation: "GFZ Helmholtz Centre for Geosciences"
+- family-names: "Cacace"
+  given-names: "Mauro"
+  affiliation: "GFZ Helmholtz Centre for Geosciences"
+- family-names: "Meeßen"
+  given-names: "Christian"
+  affiliation: "GFZ Helmholtz Centre for Geosciences"
+- family-names: "Bott"
+  given-names: "Judith"
+  affiliation: "GFZ Helmholtz Centre for Geosciences"
+- family-names: "Scheck-Wenderoth"
+  given-names: "Magdalena"
+  affiliation: "GFZ Helmholtz Centre for Geosciences"
 title: "rheolopy"
 version: 0.1.0
 date-released: 2026-07-28

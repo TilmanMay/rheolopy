@@ -45,8 +45,6 @@ def main():
     if fig_slice is not None:
          fig_slice.savefig("02_model_slice.png", dpi=300)
          print("Saved cross-section as 02_model_slice.png")
-         # To prevent showing during automated run, plt.close is used. 
-         # In a real scenario, you can rely on the plt.show() inside plot_slice().
          plt.close(fig_slice) 
     
     # Plot the Yield Strength Envelope through this layered model

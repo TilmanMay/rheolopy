@@ -20,9 +20,9 @@ def main():
 
     print(f"Material loaded: {quartzite.type} ({quartzite.source})")
 
-    # Define a depth array (0 to 30 km, positive downwards for compute_dsigma)
+    # Define a depth array (0 to -30 km, negative downwards)
     z_max = 30000.0
-    depths = np.linspace(0, z_max, 100)
+    depths = np.linspace(0, -z_max, 100)
     
     # Assume a simple linear geotherm: 20 K/km, surface temp 273.15 K
     temperature_gradient = 20.0 / 1000.0  # K / m
@@ -46,7 +46,7 @@ def main():
     
     # Plot Yield Strength Envelope
     # Convert stress to GPa, depth to km
-    plt.plot(dsigma / 1e9, d_plot / 1000, label="YSE (Kirby 1983 Wet Quartzite)", color="cornflowerblue", linewidth=2)
+    plt.plot(dsigma / 1e9, -d_plot / 1000, label="YSE (Kirby 1983 Wet Quartzite)", color="cornflowerblue", linewidth=2)
     
     plt.axvline(0, color="black", linewidth=1)
     
