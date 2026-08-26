@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import importlib.resources
-from .io_util import load_config
+from .io_util import load_config, RheolopyConfig
 from typing import Optional, Union
 import configparser
 
@@ -13,7 +13,7 @@ class Geotherm:
     Provides interpolation and unit conversion.
     """
 
-    def __init__(self, path: Optional[str] = None, config: Optional[configparser.ConfigParser] = None):
+    def __init__(self, path: Optional[str] = None, config: Optional[RheolopyConfig] = None):
         """
         Load geotherm from a CSV file.
         If path is None, tries to resolve from config.

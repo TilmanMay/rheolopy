@@ -17,7 +17,7 @@ class Layer3D:
         if data is not None:
             self.data = data
         elif csv_path is not None:
-            self.data = pd.read_csv(csv_path, delimiter=" ")  # expects columns x, y, z
+            self.data = pd.read_csv(csv_path, delim_whitespace=True)  # expects columns x, y, z
 
 
 class BackgroundModel:
@@ -208,6 +208,18 @@ class BackgroundModel:
         (from self.z_max to self.z_min) and materials is a list of materials at each depth.
         """
         x, y = self._xy_index_to_value(x_idx, y_idx)
+        
+        # Robust closest-point lookup to avoid float precision KeyErrors
+        closest_idx = (x, y)
+        if self.volumes:
+            try:
+                # Test exact match first
+                _ = self.volumes[0]["top"].loc[(x, y), "z"]
+            except KeyError:
+                idx_arr = np.array(self.volumes[0]["top"].index.tolist())
+                dist = (idx_arr[:, 0] - x)**2 + (idx_arr[:, 1] - y)**2
+                closest_idx = tuple(idx_arr[np.argmin(dist)])
+
         if all_depths:
             # Sample 200 z values from top (z_max) to bottom (z_min)
             z_sampled = np.linspace(self.z_max, self.z_min, n_z)
@@ -215,15 +227,9 @@ class BackgroundModel:
             for z_query in z_sampled:
                 mat = None
                 for i, v in enumerate(self.volumes):
-                    try:
-                        z_top = v["top"].loc[(x, y), "z"]
-                        z_bottom = v["bottom"].loc[(x, y), "z"]
-                    except KeyError:
-                        try:
-                            z_top = v["top"].loc[(round(x, 2), round(y, 2)), "z"]
-                            z_bottom = v["bottom"].loc[(round(x, 2), round(y, 2)), "z"]
-                        except KeyError:
-                            continue
+                    z_top = v["top"].loc[closest_idx, "z"]
+                    z_bottom = v["bottom"].loc[closest_idx, "z"]
+                    
                     thickness = abs(z_top - z_bottom)
                     if thickness < 1.0:
                         continue
@@ -243,15 +249,9 @@ class BackgroundModel:
             z = (self.z_min + self.z_max) / 2
 
         for i, v in enumerate(self.volumes):
-            try:
-                z_top = v["top"].loc[(x, y), "z"]
-                z_bottom = v["bottom"].loc[(x, y), "z"]
-            except KeyError:
-                try:
-                    z_top = v["top"].loc[(round(x, 2), round(y, 2)), "z"]
-                    z_bottom = v["bottom"].loc[(round(x, 2), round(y, 2)), "z"]
-                except KeyError:
-                    continue
+            z_top = v["top"].loc[closest_idx, "z"]
+            z_bottom = v["bottom"].loc[closest_idx, "z"]
+            
             thickness = abs(z_top - z_bottom)
             if thickness < 1.0:
                 continue

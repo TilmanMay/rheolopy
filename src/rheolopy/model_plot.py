@@ -149,7 +149,10 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     ax2.get_yaxis().set_visible(False)
 
     # Labels and legend
-    ax.set_xlim(-3, 3)
+    max_stress = np.nanmax(np.abs(sigma_plot)) / 1e9
+    if np.isnan(max_stress) or max_stress == 0:
+        max_stress = 3.0
+    ax.set_xlim(-max_stress * 1.1, max_stress * 1.1)
     ax.set_xlabel("Differential Stress (GPa)")
     ax.set_ylabel("Depth (km)")
     ax.set_title(f"Yield Strength Envelope at (x={x_val:.1f}, y={y_val:.1f})")

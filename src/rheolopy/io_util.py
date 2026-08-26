@@ -4,13 +4,18 @@ import importlib.resources
 import numpy as np
 
 
-def load_config(path=None):
+class RheolopyConfig(configparser.ConfigParser):
+    """ConfigParser subclass that cleanly tracks the source file path."""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.config_path: str = ""
+
+
+def load_config(path=None) -> RheolopyConfig:
     """
     Load an INI configuration file.
     
     If no path is provided, the bundled default config.ini is loaded.
-    The returned ConfigParser instance is extended with a `config_path`
-    attribute indicating the absolute path of the loaded file.
     
     Parameters
     ----------
@@ -19,10 +24,10 @@ def load_config(path=None):
         
     Returns
     -------
-    config : configparser.ConfigParser
-        The loaded configuration object with an added `config_path` attribute.
+    config : RheolopyConfig
+        The loaded configuration object with the `config_path` attribute set.
     """
-    config = configparser.ConfigParser()
+    config = RheolopyConfig()
     if path is None:
         # Load config.ini from the package data
         with importlib.resources.files("rheolopy").joinpath("config.ini").open(
@@ -59,7 +64,7 @@ def resolve_path(config, option, section="General"):
     
     Parameters
     ----------
-    config : configparser.ConfigParser
+    config : RheolopyConfig
         The configuration object (must have `config_path` set by `load_config`).
     option : str
         The option key to resolve.
