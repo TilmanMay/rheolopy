@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>rheolopy.model_plot &mdash; Rheology Explorer 0.1.0 documentation</title>
+  <title>rheolopy.model_plot &mdash; rheolopy 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
@@ -29,7 +29,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            Rheology Explorer
+            rheolopy
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">Rheology Explorer</a>
+          <a href="../../index.html">rheolopy</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -70,22 +70,46 @@
              
   <h1>Source code for rheolopy.model_plot</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cmcrameri</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.io_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_config</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.rheolopy</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_dsigma</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.core</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_dsigma</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.geotherm</span><span class="w"> </span><span class="kn">import</span> <span class="n">Geotherm</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="plot_yse">
 <a class="viewcode-back" href="../../api.html#rheolopy.model_plot.plot_yse">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_yse</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strain_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">geotherm</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Plot the yield strength envelope (YSE) at a given (x, y) index,</span>
-<span class="sd">    including background layers and the geotherm.</span>
-<span class="sd">    If x or y is None, uses the grid midpoint.</span>
+<span class="sd">    Plot the yield strength envelope (YSE) at a given (x, y) index.</span>
+
+<span class="sd">    Includes background layers as colored bands and the geotherm overlay.</span>
+<span class="sd">    If x or y is None, the function uses the grid midpoint.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    model : BackgroundModel</span>
+<span class="sd">        The geological model.</span>
+<span class="sd">    x : int, optional</span>
+<span class="sd">        Grid index for the x-coordinate.</span>
+<span class="sd">    y : int, optional</span>
+<span class="sd">        Grid index for the y-coordinate.</span>
+<span class="sd">    strain_rate : float, optional</span>
+<span class="sd">        Reference strain rate in 1/s. Defaults to config value.</span>
+<span class="sd">    ax : matplotlib.axes.Axes, optional</span>
+<span class="sd">        Axes to plot on. If None, a new figure is created.</span>
+<span class="sd">    geotherm : Geotherm, optional</span>
+<span class="sd">        Geotherm instance to use for temperature. Defaults to config value.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : matplotlib.figure.Figure or None</span>
+<span class="sd">        The created Figure if `ax` was None, else None.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">config</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;config.ini&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">strain_rate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -118,16 +142,13 @@
     <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">y_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_vals</span><span class="p">)):</span>
         <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;y index </span><span class="si">{</span><span class="n">y_idx</span><span class="si">}</span><span class="s2"> out of bounds (0 to </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">y_vals</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Find nearest x and y in the grid</span>
-    <span class="c1"># Find nearest grid values</span>
-    <span class="n">x_val</span> <span class="o">=</span> <span class="n">x_vals</span><span class="p">[(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x_vals</span> <span class="o">-</span> <span class="n">x_vals</span><span class="p">[</span><span class="n">x_idx</span><span class="p">]))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()]</span>
-    <span class="n">y_val</span> <span class="o">=</span> <span class="n">y_vals</span><span class="p">[(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_vals</span> <span class="o">-</span> <span class="n">y_vals</span><span class="p">[</span><span class="n">y_idx</span><span class="p">]))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()]</span>
+    <span class="n">x_val</span> <span class="o">=</span> <span class="n">x_vals</span><span class="p">[</span><span class="n">x_idx</span><span class="p">]</span>
+    <span class="n">y_val</span> <span class="o">=</span> <span class="n">y_vals</span><span class="p">[</span><span class="n">y_idx</span><span class="p">]</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plotting YSE at (x=</span><span class="si">{</span><span class="n">x_val</span><span class="si">}</span><span class="s2">, y=</span><span class="si">{</span><span class="n">y_val</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plotting YSE at (x=</span><span class="si">{</span><span class="n">x_val</span><span class="si">}</span><span class="s2">, y=</span><span class="si">{</span><span class="n">y_val</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
     <span class="c1"># Get top and bottom z at this (x, y)</span>
     <span class="n">top_layer</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="c1"># Get top and bottom z at this (x, y)</span>
     <span class="n">row</span> <span class="o">=</span> <span class="n">top_layer</span><span class="o">.</span><span class="n">data</span><span class="p">[</span>
         <span class="p">(</span><span class="n">top_layer</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">x_val</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">top_layer</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">y_val</span><span class="p">)</span>
     <span class="p">]</span>
@@ -142,12 +163,11 @@
     <span class="n">zs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">zmin</span><span class="p">,</span> <span class="mi">300</span><span class="p">)</span>
 
     <span class="c1"># Load geotherm and interpolate to this (x, y)</span>
-
-    <span class="n">T</span> <span class="o">=</span> <span class="n">geotherm_obj</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="o">-</span><span class="n">zs</span><span class="p">)</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">geotherm_obj</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">zs</span><span class="p">)</span>
 
     <span class="c1"># Compute YSE</span>
     <span class="n">sigma_plot</span><span class="p">,</span> <span class="n">z_plot</span> <span class="o">=</span> <span class="n">compute_dsigma</span><span class="p">(</span>
-        <span class="n">model</span><span class="p">,</span> <span class="o">-</span><span class="n">zs</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">strain_rate</span><span class="p">,</span> <span class="n">x_idx</span><span class="o">=</span><span class="n">x_idx</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="n">y_idx</span>
+        <span class="n">model</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">strain_rate</span><span class="p">,</span> <span class="n">x_idx</span><span class="o">=</span><span class="n">x_idx</span><span class="p">,</span> <span class="n">y_idx</span><span class="o">=</span><span class="n">y_idx</span>
     <span class="p">)</span>
     <span class="n">z_plot_shifted</span> <span class="o">=</span> <span class="n">z_plot</span> <span class="o">-</span> <span class="n">top_z</span>
 
@@ -180,7 +200,7 @@
     <span class="c1"># Plot YSE</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
         <span class="n">sigma_plot</span> <span class="o">/</span> <span class="mf">1e9</span><span class="p">,</span>
-        <span class="n">z_plot_shifted</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="o">-</span><span class="n">z_plot_shifted</span> <span class="o">/</span> <span class="mi">1000</span><span class="p">,</span>
         <span class="n">label</span><span class="o">=</span><span class="s2">&quot;YSE&quot;</span><span class="p">,</span>
         <span class="n">color</span><span class="o">=</span><span class="s2">&quot;cornflowerblue&quot;</span><span class="p">,</span>
         <span class="n">zorder</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
@@ -202,7 +222,10 @@
     <span class="n">ax2</span><span class="o">.</span><span class="n">get_yaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
     <span class="c1"># Labels and legend</span>
-    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">max_stress</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nanmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">sigma_plot</span><span class="p">))</span> <span class="o">/</span> <span class="mf">1e9</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">max_stress</span><span class="p">)</span> <span class="ow">or</span> <span class="n">max_stress</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">max_stress</span> <span class="o">=</span> <span class="mf">3.0</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="o">-</span><span class="n">max_stress</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">,</span> <span class="n">max_stress</span> <span class="o">*</span> <span class="mf">1.1</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Differential Stress (GPa)&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Depth (km)&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Yield Strength Envelope at (x=</span><span class="si">{</span><span class="n">x_val</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, y=</span><span class="si">{</span><span class="n">y_val</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>

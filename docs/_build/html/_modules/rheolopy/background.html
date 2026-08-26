@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>rheolopy.background &mdash; Rheology Explorer 0.1.0 documentation</title>
+  <title>rheolopy.background &mdash; rheolopy 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
@@ -29,7 +29,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            Rheology Explorer
+            rheolopy
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">Rheology Explorer</a>
+          <a href="../../index.html">rheolopy</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -73,6 +73,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Patch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cmcrameri</span><span class="w"> </span><span class="kn">import</span> <span class="n">cm</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.materials</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_material_by_id</span><span class="p">,</span> <span class="n">materials</span>
@@ -84,9 +85,12 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">Layer3D</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a 3D layer with associated material and grid data.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_path</span><span class="p">,</span> <span class="n">material_id</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">csv_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">material_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">material</span> <span class="o">=</span> <span class="n">material_id</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>  <span class="c1"># expects columns x, y, z</span></div>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">elif</span> <span class="n">csv_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">,</span> <span class="n">delim_whitespace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># expects columns x, y, z</span></div>
 
 
 
@@ -174,9 +178,7 @@
                 <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x_vals</span><span class="p">,</span> <span class="n">y_vals</span><span class="p">)</span>
                 <span class="n">zz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full_like</span><span class="p">(</span><span class="n">xx</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
                 <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s2">&quot;x&quot;</span><span class="p">:</span> <span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="s2">&quot;y&quot;</span><span class="p">:</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">(),</span> <span class="s2">&quot;z&quot;</span><span class="p">:</span> <span class="n">zz</span><span class="o">.</span><span class="n">ravel</span><span class="p">()})</span>
-            <span class="n">layer</span> <span class="o">=</span> <span class="n">Layer3D</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">Layer3D</span><span class="p">)</span>
-            <span class="n">layer</span><span class="o">.</span><span class="n">material</span> <span class="o">=</span> <span class="n">material</span>
-            <span class="n">layer</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">df</span>
+            <span class="n">layer</span> <span class="o">=</span> <span class="n">Layer3D</span><span class="p">(</span><span class="n">material_id</span><span class="o">=</span><span class="n">material</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">layer</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">csv_or_depth</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
@@ -290,6 +292,18 @@
 <span class="sd">        (from self.z_max to self.z_min) and materials is a list of materials at each depth.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xy_index_to_value</span><span class="p">(</span><span class="n">x_idx</span><span class="p">,</span> <span class="n">y_idx</span><span class="p">)</span>
+        
+        <span class="c1"># Robust closest-point lookup to avoid float precision KeyErrors</span>
+        <span class="n">closest_idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">volumes</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Test exact match first</span>
+                <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">volumes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">idx_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volumes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+                <span class="n">dist</span> <span class="o">=</span> <span class="p">(</span><span class="n">idx_arr</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">idx_arr</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+                <span class="n">closest_idx</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">idx_arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">dist</span><span class="p">)])</span>
+
         <span class="k">if</span> <span class="n">all_depths</span><span class="p">:</span>
             <span class="c1"># Sample 200 z values from top (z_max) to bottom (z_min)</span>
             <span class="n">z_sampled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z_max</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_min</span><span class="p">,</span> <span class="n">n_z</span><span class="p">)</span>
@@ -297,15 +311,9 @@
             <span class="k">for</span> <span class="n">z_query</span> <span class="ow">in</span> <span class="n">z_sampled</span><span class="p">:</span>
                 <span class="n">mat</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volumes</span><span class="p">):</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="n">z_top</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-                        <span class="n">z_bottom</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;bottom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-                    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                        <span class="k">try</span><span class="p">:</span>
-                            <span class="n">z_top</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-                            <span class="n">z_bottom</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;bottom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-                        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                            <span class="k">continue</span>
+                    <span class="n">z_top</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">closest_idx</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
+                    <span class="n">z_bottom</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;bottom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">closest_idx</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
+                    
                     <span class="n">thickness</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z_top</span> <span class="o">-</span> <span class="n">z_bottom</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">thickness</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
                         <span class="k">continue</span>
@@ -325,15 +333,9 @@
             <span class="n">z</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">z_min</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">z_max</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">volumes</span><span class="p">):</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">z_top</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-                <span class="n">z_bottom</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;bottom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                <span class="k">try</span><span class="p">:</span>
-                    <span class="n">z_top</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-                    <span class="n">z_bottom</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;bottom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="nb">round</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-                <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-                    <span class="k">continue</span>
+            <span class="n">z_top</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">closest_idx</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
+            <span class="n">z_bottom</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;bottom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">closest_idx</span><span class="p">,</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
+            
             <span class="n">thickness</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z_top</span> <span class="o">-</span> <span class="n">z_bottom</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">thickness</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -421,7 +423,6 @@
             <span class="c1"># Draw black lines for each layer</span>
             <span class="k">for</span> <span class="n">ys</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">layer_yz</span><span class="p">:</span>
                 <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ys</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
-            <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Patch</span>
 
             <span class="n">handles</span> <span class="o">=</span> <span class="p">[</span><span class="n">Patch</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color_map</span><span class="p">[</span><span class="n">mat</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">mat</span><span class="p">)</span> <span class="k">for</span> <span class="n">mat</span> <span class="ow">in</span> <span class="n">all_mats</span><span class="p">]</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
@@ -435,7 +436,6 @@
             <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">z_min</span><span class="p">,</span> <span class="n">z_max</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">y_min</span><span class="p">,</span> <span class="n">y_max</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cross-section at x index=</span><span class="si">{</span><span class="n">x_index</span><span class="si">}</span><span class="s2"> (x=</span><span class="si">{</span><span class="n">x_val</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-            <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">fig</span>
 
         <span class="c1"># Default: y_index cross-section</span>
@@ -511,8 +511,6 @@
         <span class="k">for</span> <span class="n">xs</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">layer_xz</span><span class="p">:</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">zs</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">1.5</span><span class="p">)</span>
 
-        <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.patches</span><span class="w"> </span><span class="kn">import</span> <span class="n">Patch</span>
-
         <span class="n">handles</span> <span class="o">=</span> <span class="p">[</span><span class="n">Patch</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="n">color_map</span><span class="p">[</span><span class="n">mat</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="n">mat</span><span class="p">)</span> <span class="k">for</span> <span class="n">mat</span> <span class="ow">in</span> <span class="n">all_mats</span><span class="p">]</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span>
             <span class="n">handles</span><span class="o">=</span><span class="n">handles</span><span class="p">,</span>
@@ -525,7 +523,6 @@
         <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">z_min</span><span class="p">,</span> <span class="n">z_max</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span>
         <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cross-section at y index=</span><span class="si">{</span><span class="n">y_index</span><span class="si">}</span><span class="s2"> (y=</span><span class="si">{</span><span class="n">y_val</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fig</span></div>
 
 
@@ -543,11 +540,19 @@
         <span class="n">output_lines</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">tag_list</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">volumes</span><span class="p">:</span>
-            <span class="k">try</span><span class="p">:</span>
-                <span class="n">z_top</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-                <span class="n">z_bottom</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;bottom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
-            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1"># Find nearest grid node for top</span>
+            <span class="n">df_top</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">df_top</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
                 <span class="k">continue</span>
+            <span class="n">dist_sq_top</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_top</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">df_top</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="n">z_top</span> <span class="o">=</span> <span class="n">df_top</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dist_sq_top</span><span class="o">.</span><span class="n">idxmin</span><span class="p">(),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
+
+            <span class="c1"># Find nearest grid node for bottom</span>
+            <span class="n">df_bot</span> <span class="o">=</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;bottom&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">df_bot</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">dist_sq_bot</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_bot</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">df_bot</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="n">z_bottom</span> <span class="o">=</span> <span class="n">df_bot</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">dist_sq_bot</span><span class="o">.</span><span class="n">idxmin</span><span class="p">(),</span> <span class="s2">&quot;z&quot;</span><span class="p">]</span>
             <span class="n">thickness</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">z_top</span> <span class="o">-</span> <span class="n">z_bottom</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">thickness</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
                 <span class="k">continue</span>  <span class="c1"># Skip layers thinner than 1 meter</span>
@@ -679,7 +684,6 @@
             <span class="n">location</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Thickness in m&quot;</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">fig</span></div>
 
 

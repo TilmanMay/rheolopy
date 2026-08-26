@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>rheolopy.materials &mdash; Rheology Explorer 0.1.0 documentation</title>
+  <title>rheolopy.materials &mdash; rheolopy 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
 
@@ -29,7 +29,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            Rheology Explorer
+            rheolopy
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">Rheology Explorer</a>
+          <a href="../../index.html">rheolopy</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -69,17 +69,17 @@
            <div itemprop="articleBody">
              
   <h1>Source code for rheolopy.materials</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
 
 <div class="viewcode-block" id="Material">
 <a class="viewcode-back" href="../../api.html#rheolopy.materials.Material">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Material</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Contains a list of materials used for strength computation with exodus</span>
-<span class="sd">    module. Available properties are</span>
+<span class="sd">    Contains a list of materials used for strength computation. Available properties are</span>
 
 <span class="sd">    Meta properties</span>
 <span class="sd">    ---------------</span>
@@ -88,7 +88,7 @@
 <span class="sd">    source : str</span>
 <span class="sd">        Data source</span>
 <span class="sd">    type : str</span>
-<span class="sd">        What does your material pretend to be ??</span>
+<span class="sd">        Rock type description (e.g. &#39;olivine dry&#39;, &#39;quartzite wet&#39;).</span>
 
 <span class="sd">    Byerlee&#39;s law</span>
 <span class="sd">    -------------</span>
@@ -133,23 +133,23 @@
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="nb">id</span><span class="p">,</span>
-        <span class="n">source</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">fc_e</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span>
-        <span class="n">fc_c</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span>
-        <span class="n">lambda_pore</span><span class="o">=</span><span class="mf">0.36</span><span class="p">,</span>
-        <span class="n">rho_b</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">a_disloc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">n</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">q_disloc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">a_diff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">q_diff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">d</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">m</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">eps_peierls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">sigma_peierls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">stress_pd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="nb">id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">source</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">fc_e</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.75</span><span class="p">,</span>
+        <span class="n">fc_c</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">3.0</span><span class="p">,</span>
+        <span class="n">lambda_pore</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.36</span><span class="p">,</span>
+        <span class="n">rho_b</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">a_disloc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">n</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">q_disloc</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">a_diff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">q_diff</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">d</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">m</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">eps_peierls</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">sigma_peierls</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
+        <span class="n">stress_pd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="nb">id</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">source</span> <span class="o">=</span> <span class="n">source</span>
@@ -172,7 +172,7 @@
 
 <div class="viewcode-block" id="Material.get_attributes">
 <a class="viewcode-back" href="../../api.html#rheolopy.materials.Material.get_attributes">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of attribute names that are not NaN.&quot;&quot;&quot;</span>
         <span class="n">non_nan_attributes</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">attr</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -188,15 +188,12 @@
 
 <div class="viewcode-block" id="materials">
 <a class="viewcode-back" href="../../api.html#rheolopy.materials.materials">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">materials</span><span class="p">(</span><span class="n">database_path</span><span class="o">=</span><span class="s2">&quot;database.json&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">materials</span><span class="p">(</span><span class="n">database_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;database.json&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Material</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Load materials from a JSON database file.</span>
 <span class="sd">    If database_path is not absolute, first try to resolve relative to the current working directory.</span>
 <span class="sd">    If not found, try to resolve relative to the project/module directory.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
-
     <span class="c1"># Try current working directory first</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">database_path</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">database_path</span><span class="p">):</span>
@@ -222,7 +219,7 @@
 
 <div class="viewcode-block" id="get_material_by_id">
 <a class="viewcode-back" href="../../api.html#rheolopy.materials.get_material_by_id">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">get_material_by_id</span><span class="p">(</span><span class="n">mats</span><span class="p">,</span> <span class="n">material_id</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_material_by_id</span><span class="p">(</span><span class="n">mats</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Material</span><span class="p">],</span> <span class="n">material_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Material</span><span class="p">]:</span>
     <span class="n">material_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">mat</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">mat</span> <span class="k">for</span> <span class="n">mat</span> <span class="ow">in</span> <span class="n">mats</span><span class="p">}</span>
     <span class="k">if</span> <span class="n">material_id</span> <span class="ow">in</span> <span class="n">material_dict</span><span class="p">:</span>
         <span class="n">found_material</span> <span class="o">=</span> <span class="n">material_dict</span><span class="p">[</span><span class="n">material_id</span><span class="p">]</span>

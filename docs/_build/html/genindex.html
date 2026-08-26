@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; Rheology Explorer 0.1.0 documentation</title>
+  <title>Index &mdash; rheolopy 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
 
@@ -29,7 +29,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            Rheology Explorer
+            rheolopy
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -50,7 +50,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">Rheology Explorer</a>
+          <a href="index.html">rheolopy</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -107,11 +107,11 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#rheolopy.rheolopy.calc_peierls">calc_peierls() (in module rheolopy.rheolopy)</a>
+      <li><a href="api.html#rheolopy.core.calc_peierls">calc_peierls() (in module rheolopy.core)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#rheolopy.rheolopy.compute_dsigma">compute_dsigma() (in module rheolopy.rheolopy)</a>
+      <li><a href="api.html#rheolopy.core.compute_dsigma">compute_dsigma() (in module rheolopy.core)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -119,13 +119,13 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#rheolopy.rheolopy.eta_diffusion">eta_diffusion() (in module rheolopy.rheolopy)</a>
+      <li><a href="api.html#rheolopy.core.eta_diffusion">eta_diffusion() (in module rheolopy.core)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#rheolopy.rheolopy.eta_dislocation">eta_dislocation() (in module rheolopy.rheolopy)</a>
+      <li><a href="api.html#rheolopy.core.eta_dislocation">eta_dislocation() (in module rheolopy.core)</a>
 </li>
-      <li><a href="api.html#rheolopy.rheolopy.eta_effective">eta_effective() (in module rheolopy.rheolopy)</a>
+      <li><a href="api.html#rheolopy.core.eta_effective">eta_effective() (in module rheolopy.core)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -165,6 +165,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#rheolopy.io_util.load_config">load_config() (in module rheolopy.io_util)</a>
+</li>
       <li><a href="api.html#rheolopy.background.load_model">load_model() (in module rheolopy.background)</a>
 </li>
   </ul></td>
@@ -183,13 +185,15 @@
       <ul>
         <li><a href="api.html#module-rheolopy.background">rheolopy.background</a>
 </li>
+        <li><a href="api.html#module-rheolopy.core">rheolopy.core</a>
+</li>
         <li><a href="api.html#module-rheolopy.geotherm">rheolopy.geotherm</a>
+</li>
+        <li><a href="api.html#module-rheolopy.io_util">rheolopy.io_util</a>
 </li>
         <li><a href="api.html#module-rheolopy.materials">rheolopy.materials</a>
 </li>
         <li><a href="api.html#module-rheolopy.model_plot">rheolopy.model_plot</a>
-</li>
-        <li><a href="api.html#module-rheolopy.rheolopy">rheolopy.rheolopy</a>
 </li>
       </ul></li>
   </ul></td>
@@ -214,11 +218,20 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="api.html#rheolopy.io_util.resolve_path">resolve_path() (in module rheolopy.io_util)</a>
+</li>
       <li>
     rheolopy.background
 
       <ul>
         <li><a href="api.html#module-rheolopy.background">module</a>
+</li>
+      </ul></li>
+      <li>
+    rheolopy.core
+
+      <ul>
+        <li><a href="api.html#module-rheolopy.core">module</a>
 </li>
       </ul></li>
       <li>
@@ -228,6 +241,15 @@
         <li><a href="api.html#module-rheolopy.geotherm">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    rheolopy.io_util
+
+      <ul>
+        <li><a href="api.html#module-rheolopy.io_util">module</a>
+</li>
+      </ul></li>
       <li>
     rheolopy.materials
 
@@ -235,8 +257,6 @@
         <li><a href="api.html#module-rheolopy.materials">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     rheolopy.model_plot
 
@@ -244,24 +264,19 @@
         <li><a href="api.html#module-rheolopy.model_plot">module</a>
 </li>
       </ul></li>
-      <li>
-    rheolopy.rheolopy
-
-      <ul>
-        <li><a href="api.html#module-rheolopy.rheolopy">module</a>
+      <li><a href="api.html#rheolopy.io_util.RheolopyConfig">RheolopyConfig (class in rheolopy.io_util)</a>
 </li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#rheolopy.rheolopy.sigma_byerlee">sigma_byerlee() (in module rheolopy.rheolopy)</a>
+      <li><a href="api.html#rheolopy.core.sigma_byerlee">sigma_byerlee() (in module rheolopy.core)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="api.html#rheolopy.rheolopy.sigma_d">sigma_d() (in module rheolopy.rheolopy)</a>
+      <li><a href="api.html#rheolopy.core.sigma_d">sigma_d() (in module rheolopy.core)</a>
 </li>
   </ul></td>
 </tr></table>

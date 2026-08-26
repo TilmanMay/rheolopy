@@ -1,7 +1,7 @@
 API Reference
 =============
 
-.. automodule:: rheolopy.rheolopy
+.. automodule:: rheolopy.core
    :members:
    :undoc-members:
    :show-inheritance:
@@ -30,6 +30,13 @@ Background
 Model Plot
 ----------
 .. automodule:: rheolopy.model_plot
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+IO Utilities
+------------
+.. automodule:: rheolopy.io_util
    :members:
    :undoc-members:
    :show-inheritance:

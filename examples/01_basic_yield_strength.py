@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from rheolopy.materials import materials, get_material_by_id
-from rheolopy.rheolopy import compute_dsigma
+from rheolopy.core import compute_dsigma
 import numpy as np
 
 def main():
@@ -27,7 +27,7 @@ def main():
     # Assume a simple linear geotherm: 20 K/km, surface temp 273.15 K
     temperature_gradient = 20.0 / 1000.0  # K / m
     surface_temp = 273.15
-    temperatures = surface_temp + depths * temperature_gradient
+    temperatures = surface_temp - depths * temperature_gradient
     
     # Define strain rate
     strain_rate = 1e-15  # 1/s

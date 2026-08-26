@@ -1,7 +1,7 @@
 API Reference
 =============
 
-.. automodule:: rheolopy.rheolopy
+.. automodule:: rheolopy.core
    :members:
    :undoc-members:
    :show-inheritance:
