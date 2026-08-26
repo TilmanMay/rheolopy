@@ -20,8 +20,12 @@ def main():
     # Create an instance of ConfigParser
     config = configparser.ConfigParser()
 
-    # Read the config file
-    config.read("process_rheology/config.ini")
+    # Read the config file (try script directory first, fallback to CWD)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_path = os.path.join(script_dir, "config.ini")
+    if not os.path.exists(config_path):
+        config_path = "process_rheology/config.ini"
+    config.read(config_path)
 
     # Accessing parameters from the General section
     strain_rate = config.getfloat("General", "strain_rate")
@@ -30,6 +34,13 @@ def main():
     inputfile = config.get("Settings", "inputfile")
     outputfile = config.get("Settings", "outputfile")
     rheology_law = config.get("Settings", "rheology_law")
+    
+    # Strip "process_rheology/" from paths if we are already inside that directory
+    if os.path.basename(path) == "process_rheology":
+        if inputfile.startswith("process_rheology/"):
+            inputfile = inputfile.replace("process_rheology/", "")
+        if outputfile.startswith("process_rheology/"):
+            outputfile = outputfile.replace("process_rheology/", "")
 
     # Load input data
     data = np.loadtxt(os.path.join(path, inputfile), delimiter=",", comments="#")

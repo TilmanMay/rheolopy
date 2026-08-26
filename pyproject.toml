@@ -36,7 +36,8 @@ dev = [
     "sphinx-rtd-theme"
 ]
 processing = [
-    "netCDF4"
+    "netCDF4",
+    "scipy",
 ]
 
 [tool.setuptools]

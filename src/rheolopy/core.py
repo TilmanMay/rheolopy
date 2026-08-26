@@ -245,7 +245,17 @@ def calc_peierls(
     n = material.n
     q_disloc = material.q_disloc
 
-    termln = np.log(stress_pd * (a_disloc / strain_rate) ** (1.0 / n))
+    if np.isclose(sigma_peierls, stress_pd):
+        return sigma_peierls
+
+    # Safeguard termln against negative or zero values
+    arg = stress_pd * (a_disloc / strain_rate) ** (1.0 / n)
+    if arg <= 0:
+        return 0.0
+    termln = np.log(arg)
+    if np.isclose(termln, 0.0):
+        return 0.0
+        
     TPDL = q_disloc / (n * R * termln)
     QPeierls = (
         R
@@ -253,9 +263,12 @@ def calc_peierls(
         * np.log(eps_peierls / strain_rate)
         * ((1.0 - stress_pd / sigma_peierls) ** -2.0)
     )
-    peierls = sigma_peierls * (
-        1.0 - np.sqrt((R * temp / QPeierls) * np.log(eps_peierls / strain_rate))
-    )
+    
+    radicand = (R * temp / QPeierls) * np.log(eps_peierls / strain_rate)
+    if radicand < 0:
+        return 0.0
+        
+    peierls = sigma_peierls * (1.0 - np.sqrt(radicand))
 
     return peierls if peierls > 0 else 0.0
 
@@ -336,11 +349,13 @@ def sigma_d(
     if return_all:
         return s_byerlee, s_creep, s_diff, s_disloc
     if return_index:
-        if s_byerlee <= s_creep:
+        if np.isnan(s_creep) or s_byerlee <= s_creep:
             return 0
         elif is_peierls:
             return 1
         else:
+            if np.isnan(s_diff) and np.isnan(s_disloc):
+                return 0
             return np.nanargmin([np.nan, np.nan, s_diff, s_disloc])
     else:
         return np.nanmin([s_byerlee, s_creep])

@@ -450,11 +450,19 @@ class BackgroundModel:
         output_lines = []
         tag_list = []
         for v in self.volumes:
-            try:
-                z_top = v["top"].loc[(x, y), "z"]
-                z_bottom = v["bottom"].loc[(x, y), "z"]
-            except KeyError:
+            # Find nearest grid node for top
+            df_top = v["top"].reset_index()
+            if df_top.empty:
                 continue
+            dist_sq_top = (df_top["x"] - x) ** 2 + (df_top["y"] - y) ** 2
+            z_top = df_top.loc[dist_sq_top.idxmin(), "z"]
+
+            # Find nearest grid node for bottom
+            df_bot = v["bottom"].reset_index()
+            if df_bot.empty:
+                continue
+            dist_sq_bot = (df_bot["x"] - x) ** 2 + (df_bot["y"] - y) ** 2
+            z_bottom = df_bot.loc[dist_sq_bot.idxmin(), "z"]
             thickness = abs(z_top - z_bottom)
             if thickness < 1.0:
                 continue  # Skip layers thinner than 1 meter

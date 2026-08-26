@@ -22,7 +22,6 @@ Usage:
 import os
 import sys
 import numpy as np
-import netCDF4 as nc
 from scipy.io import netcdf_file
 from datetime import datetime
 
