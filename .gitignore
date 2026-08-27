@@ -107,7 +107,6 @@ process_rheology/output/
 
 # LaTeX and templates
 template.tex
-Theoretical background/
 
 # Agent instruction files
 AGENTS.md

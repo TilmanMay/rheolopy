@@ -115,8 +115,6 @@ This package computes the minimum stress required for deformation at a given dep
 * **Dislocation & Diffusion Creep:** Modeled using standard Arrhenius relationships (e.g., Hirth & Kohlstedt, 2003).
 * **Peierls Creep:** Low-temperature plasticity activated at high stresses (> 200 MPa), governed by the exponential flow law (Goetze & Evans, 1979).
 
-> **Note:** For a complete mathematical derivation of the implemented flow laws and the exact physical formulas used in this package, please refer to our [Theoretical Background Documentation](docs/theoretical_background.pdf).
-
 ### Material Database
 
 The built-in material database (`database.json`) includes the following predefined rheologies:
