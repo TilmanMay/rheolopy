@@ -1,6 +1,5 @@
 # Rheolopy
 
-[![PyPI version](https://badge.fury.io/py/rheolopy.svg)](https://badge.fury.io/py/rheolopy)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
 
@@ -27,13 +26,7 @@ Rheology describes how rocks deform under stress. In the lithosphere, this behav
 
 ## Installation
 
-Install the latest release directly from PyPI:
-
-```sh
-pip install rheolopy
-```
-
-For development, including testing and documentation dependencies:
+Clone the repository and install it locally (including development dependencies):
 
 ```sh
 git clone https://github.com/TilmanMay/rheolopy.git
