@@ -1,7 +1,7 @@
 # Rheolopy
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![DOI](https://zenodo.org/badge/1348500854.svg)](https://doi.org/10.5281/zenodo.22129174)
 
 **Rheolopy** is a robust Python package for geological rheology modeling and visualization. It provides tools to construct layered lithospheric models, calculate depth-dependent yield strengths, and compute effective viscosities.
 
@@ -178,7 +178,9 @@ For an interactive usage overview, check out **[Rheology Explorer](https://git.g
 **License:** MIT License. See [LICENSE](LICENSE) for details.
 
 **Citing:** If you use this package in your research, please cite it:
-> *Citation will be provided upon publication.*
+> May, T., Cacace, M., Bott, J., & Scheck-Wenderoth, M. (2026). *rheolopy* (v0.1.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.22129174
+
+Alternatively, you can use the "Cite this repository" widget on the right sidebar of the GitHub page to export the citation to BibTeX or APA formats.
 
 ---
 
