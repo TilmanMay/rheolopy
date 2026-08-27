@@ -8,9 +8,6 @@ authors:
 - family-names: "Cacace"
   given-names: "Mauro"
   affiliation: "GFZ Helmholtz Centre for Geosciences"
-- family-names: "Meeßen"
-  given-names: "Christian"
-  affiliation: "GFZ Helmholtz Centre for Geosciences"
 - family-names: "Bott"
   given-names: "Judith"
   affiliation: "GFZ Helmholtz Centre for Geosciences"
@@ -20,4 +17,4 @@ authors:
 title: "rheolopy"
 version: 0.1.0
 date-released: 2026-07-28
-url: "https://github.com/tmay/rheolopy"
+url: "https://git.gfz-potsdam.de/tmay/rheolopy"
