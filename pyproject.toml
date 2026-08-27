@@ -26,8 +26,8 @@ classifiers = [
 keywords = ["rheology", "geophysics", "geology", "yield strength envelope", "lithosphere"]
 
 [project.urls]
-Homepage = "https://git.gfz-potsdam.de/tmay/rheolopy"
-Repository = "https://git.gfz-potsdam.de/tmay/rheolopy"
+Homepage = "https://github.com/TilmanMay/rheolopy"
+Repository = "https://github.com/TilmanMay/rheolopy"
 
 [project.optional-dependencies]
 dev = [

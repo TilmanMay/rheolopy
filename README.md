@@ -36,7 +36,7 @@ pip install rheolopy
 For development, including testing and documentation dependencies:
 
 ```sh
-git clone https://git.gfz-potsdam.de/tmay/rheolopy.git
+git clone https://github.com/TilmanMay/rheolopy.git
 cd rheolopy
 pip install -e .[dev]
 ```
