@@ -84,19 +84,18 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
             f"No data found for (x={x_val}, y={y_val}). Check your grid indices or coordinates."
         )
     top_z = row["z"].values[0]
-    bottom_z = model.z_min
-    # Depth and temperature arrays specific to (x, y)
-    zmin = bottom_z
-    zs = np.linspace(0, zmin, 300)
+    bottom_z = model.z_max
+    
+    # Absolute coordinates from surface to bottom
+    z_abs = np.linspace(top_z, bottom_z, 300)
 
-    # Load geotherm and interpolate to this (x, y)
-    T = geotherm_obj.interpolate(zs)
+    # Load geotherm and interpolate using depth below local surface
+    T = geotherm_obj.interpolate(z_abs - top_z)
 
-    # Compute YSE
+    # Compute YSE (compute_dsigma expects absolute coordinates and handles surface internally)
     sigma_plot, z_plot = compute_dsigma(
-        model, zs, T, strain_rate, x_idx=x_idx, y_idx=y_idx
+        model, z_abs, T, strain_rate, x_idx=x_idx, y_idx=y_idx
     )
-    z_plot_shifted = z_plot - top_z
 
     # Plot background layers as colored bands for this (x, y)
     layers = model.print_layers_at(x_idx=x_idx, y_idx=y_idx, tag=True)
@@ -109,8 +108,8 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
         # Use the global index for color assignment
         idx = material_to_index.get(material, 0)
         color = colormap(idx / max(1, n_layers - 1))
-        top_km = -z_top / 1000
-        bottom_km = -z_bottom / 1000
+        top_km = z_top / 1000.0
+        bottom_km = z_bottom / 1000.0
         span = ax.axhspan(ymin=top_km, ymax=bottom_km, color=color, alpha=0.3, zorder=0)
         mid_km = (top_km + bottom_km) / 2
         ax.text(
@@ -127,7 +126,7 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     # Plot YSE
     ax.plot(
         sigma_plot / 1e9,
-        -z_plot_shifted / 1000,
+        z_plot / 1000.0,
         label="YSE",
         color="cornflowerblue",
         zorder=2,
@@ -139,7 +138,7 @@ def plot_yse(model, x=None, y=None, strain_rate=None, ax=None, geotherm=None):
     ax2 = ax.twiny()
     ax2.plot(
         T - 273.15,
-        -(zs + top_z) / 1000,  # shift by top_z so depths are absolute
+        z_abs / 1000.0,
         linestyle="--",
         color="orange",
         label="Temperature",

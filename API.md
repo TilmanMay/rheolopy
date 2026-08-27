@@ -17,7 +17,7 @@ Compute the differential stress using Byerlee's law.
 | Name | Type | Description |
 |------|------|-------------|
 | `material` | `Material` | Material object with `fc_e`, `fc_c`, `lambda_pore`, `rho_b`. |
-| `z` | `float` | Depth in meters (z <= 0, surface = 0). |
+| `z` | `float` | Depth in meters (z >= 0, surface = 0, positive downward). |
 | `mode` | `str` | `'compression'` or `'extension'`. |
 
 **Returns:** `float` — Differential stress in Pa.
@@ -88,7 +88,7 @@ Compute the Peierls stress for a material at a given temperature and strain rate
 
 ---
 
-#### `sigma_d(material, z, temp, strain_rate, mode, return_all, return_index)`
+#### `sigma_d(material, z, temp, strain_rate, mode, return_all, return_index, eta_min, eta_max)`
 
 Compute the differential stress at a given depth and temperature, considering Byerlee's law, dislocation creep, diffusion creep, and optionally Peierls creep. Returns the minimum stress required for deformation (the controlling mechanism).
 
@@ -97,12 +97,14 @@ Compute the differential stress at a given depth and temperature, considering By
 | Name | Type | Default | Description |
 |------|------|---------|-------------|
 | `material` | `Material` | — | Material object. |
-| `z` | `float` | — | Depth in meters (z <= 0, surface = 0). |
+| `z` | `float` | — | Depth in meters (z >= 0, surface = 0, positive downward). |
 | `temp` | `float` | — | Temperature in Kelvin. |
 | `strain_rate` | `float` | `1e-17` | Strain rate in 1/s. |
 | `mode` | `str` | — | `'compression'` or `'extension'`. |
 | `return_all` | `bool` | `False` | If `True`, return all stress components. |
 | `return_index` | `bool` | `False` | If `True`, return the index of the controlling mechanism. |
+| `eta_min` | `float` | `None` | Minimum allowable effective viscosity (Pa·s). |
+| `eta_max` | `float` | `None` | Maximum allowable effective viscosity (Pa·s). |
 
 **Returns:** `float` or `tuple` — Differential stress in Pa, or tuple of all stresses if `return_all=True`.
 
@@ -117,7 +119,7 @@ Compute differential stress for a `Material` or `BackgroundModel` at given depth
 | Name | Type | Description |
 |------|------|-------------|
 | `background` | `Material` or `BackgroundModel` | The model or material to compute stresses for. |
-| `z` | `float` or `array-like` | Depth(s) in meters (z <= 0, surface = 0). |
+| `z` | `float` or `array-like` | Depth(s) in meters (z >= 0, surface = 0, positive downward). |
 | `T` | `float` or `array-like` | Temperature(s) in Kelvin. |
 | `strain_rate` | `float` | Strain rate in 1/s. |
 | `x_idx` | `int`, optional | x grid index (for `BackgroundModel` only). |
@@ -210,7 +212,7 @@ Interpolate temperature at given depth(s).
 
 | Name | Type | Description |
 |------|------|-------------|
-| `z` | `float` or `ndarray` | Depth(s) in meters (z <= 0). |
+| `z` | `float` or `ndarray` | Depth(s) in meters (positive downward). |
 
 **Returns:** Temperature(s) in Kelvin.
 
@@ -262,7 +264,7 @@ Query the material at a specific (x, y, z) point.
 |------|------|---------|-------------|
 | `x_idx` | `int` | midpoint | x grid index. |
 | `y_idx` | `int` | midpoint | y grid index. |
-| `z` | `float` | midpoint | Depth in meters (negative = below surface). |
+| `z` | `float` | midpoint | Depth in meters (positive = below surface). |
 | `all_depths` | `bool` | `False` | If `True`, return materials at all sampled depths. |
 | `n_z` | `int` | `200` | Number of depth samples when `all_depths=True`. |
 

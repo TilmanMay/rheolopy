@@ -18,7 +18,7 @@ Rheology describes how rocks deform under stress. In the lithosphere, this behav
 
 * **3D Geological Modeling:** Construct complex layered models from depth arrays or 3D structural CSV grids.
 * **Extensible Material Database:** Includes standard rock types (e.g., wet/dry Olivine, Quartzite, Diabase) loaded seamlessly from JSON.
-* **Multi-Mechanism Physics:** Models Brittle Failure (Byerlee's Law) and Ductile Flow (Dislocation, Diffusion, and Peierls creep).
+* **Multi-Mechanism Physics:** Models Brittle Failure (Byerlee's Law) and Ductile Flow (Dislocation, Diffusion, and Peierls creep). By default, no viscosity clamping is applied, but optional bounding (eta_min, eta_max) is supported.
 * **Yield Strength Envelopes:** Built-in visualization tools to generate publication-ready YSE plots.
 * **Batch Processing:** Scalable pipeline for computing rheology across massive geological datasets (see `process_rheology/`).
 * **Reproducible Pipelines:** Fully configurable via `.ini` files for version-controlled experimental setups.
@@ -58,7 +58,7 @@ mats = materials()
 olivine = get_material_by_id(mats, "olivine_hirth_dry")
 
 # 2. Define geological conditions
-depth = -20000.0      # meters (20 km below surface)
+depth = 20000.0       # meters (20 km below surface, positive downward)
 temp = 800.0          # Kelvin
 strain_rate = 1e-15   # 1/s
 
@@ -82,8 +82,8 @@ database = "database.json"
 [Model]
 layers = [
     [0, "quartzite_hansen_wet"],
-    [-15000, "diabase_maryland_strong"],
-    [-35000, "olivine_hirth_dry"]
+    [15000, "diabase_maryland_strong"],
+    [35000, "olivine_hirth_dry"]
   ]
 ```
 

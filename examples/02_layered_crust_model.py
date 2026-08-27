@@ -16,20 +16,20 @@ def main():
     model = BackgroundModel()
     
     # We will build a simple 2-layer crust over a mantle
-    # In rheolopy, layers are added by their top boundary depth (positive upwards!)
-    # Surface is at 0, Moho is negative depth.
+    # In rheolopy, layers are added by their top boundary depth (positive downwards!)
+    # Surface is at 0, Moho is positive depth.
     
-    # Layer 1: Upper Crust (Wet Quartzite), surface to -15km
+    # Layer 1: Upper Crust (Wet Quartzite), surface to 15km
     upper_crust = get_material_by_id(mats, "quartzite_kirby_wet")
     model.add_layer(0, upper_crust)  # Top boundary at z=0
     
-    # Layer 2: Lower Crust (Mafic Granulite), -15km to -35km
+    # Layer 2: Lower Crust (Mafic Granulite), 15km to 35km
     lower_crust = get_material_by_id(mats, "granulite_mafic_wilks")
-    model.add_layer(-15000, lower_crust)  # Top boundary at z=-15km
+    model.add_layer(15000, lower_crust)  # Top boundary at z=15km
     
-    # Layer 3: Lithospheric Mantle (Dry Olivine), -35km downwards
+    # Layer 3: Lithospheric Mantle (Dry Olivine), 35km downwards
     mantle = get_material_by_id(mats, "olivine_hirth_dry")
-    model.add_layer(-35000, mantle)  # Top boundary at z=-35km
+    model.add_layer(35000, mantle)  # Top boundary at z=35km
     
     # Initialize the model to compute intersections and thicknesses
     print("Initializing layered model...")

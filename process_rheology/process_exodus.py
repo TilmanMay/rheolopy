@@ -34,11 +34,7 @@ if _src_dir not in sys.path:
     sys.path.insert(0, _src_dir)
 
 from rheolopy import materials as load_materials, get_material_by_id
-from rheolopy.core import (
-    sigma_byerlee,
-    eta_effective as rheo_eta_effective,
-    calc_peierls,
-)
+from rheolopy.core import sigma_d
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -235,42 +231,35 @@ def evaluate_point(zp, temp_K, props, is_crust, eta_low, eta_up, effective_rho):
     orig_rho = mat.rho_b
     mat.rho_b = effective_rho
 
-    depth_z = -abs(zp)  # Enforce negative depth convention
-    brittle = sigma_byerlee(mat, depth_z, "compression")
+    # Absolute depth
+    depth_z = abs(zp)
 
-    eta_eff_val, eta_dis_val, eta_diff_val = rheo_eta_effective(
-        mat, temp_K, strain_rate
+    # Let rheolopy core do all the physics and clipping!
+    brittle, creep, s_diff, s_disl, peierls_val = sigma_d(
+        mat, depth_z, temp_K, strain_rate, mode="compression",
+        return_all=True, eta_min=eta_low, eta_max=eta_up
     )
-
-    if not np.isnan(eta_eff_val):
-        eta_eff_val = np.clip(eta_eff_val, eta_low, eta_up)
-
-    creep = 2.0 * eta_eff_val * strain_rate if not np.isnan(eta_eff_val) else 1e99
-
-    # Peierls stress (activated if the material has peierls parameters)
-    peierls_val = 0.0
-    if hasattr(mat, 'eps_peierls') and mat.eps_peierls is not None:
-        peierls_val = calc_peierls(mat, temp_K, strain_rate)
-        if peierls_val < 0.0:
-            peierls_val = 0.0
-        if creep > STRESS_PD and peierls_val > 0.0 and peierls_val < creep:
-            creep = peierls_val
-
+    
     dsigma = min(brittle, creep)
     bdt = 0 if brittle < creep else 1  # 0 = brittle, 1 = ductile
     
     # Restore original density
     mat.rho_b = orig_rho
 
+    eta_diff_val = (s_diff / (2.0 * strain_rate)) if not np.isnan(s_diff) else 0.0
+    eta_disl_val = (s_disl / (2.0 * strain_rate)) if not np.isnan(s_disl) else 0.0
+    # True effective viscosity (includes Peierls reduction if active)
+    eta_eff_val = (creep / (2.0 * strain_rate)) if not np.isnan(creep) else 0.0
+
     return {
         "rho": props.density,
         "brittle": brittle,
         "ductile": creep,
-        "peierls": peierls_val,
+        "peierls": peierls_val if peierls_val is not None else 0.0,
         "yield": dsigma,
-        "eta_diff": eta_diff_val if not np.isnan(eta_diff_val) else 0.0,
-        "eta_disl": eta_dis_val if not np.isnan(eta_dis_val) else 0.0,
-        "eta_eff": eta_eff_val if not np.isnan(eta_eff_val) else 0.0,
+        "eta_diff": eta_diff_val,
+        "eta_disl": eta_disl_val,
+        "eta_eff": eta_eff_val,
         "bdt": bdt,
     }
 

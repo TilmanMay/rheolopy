@@ -41,8 +41,8 @@ def sigma_byerlee(
         Material object with properties ``fc_e``, ``fc_c``, ``lambda_pore``,
         and ``rho_b``.
     z : float
-        Depth in meters (z <= 0, surface = 0).
-    mode : str
+        Depth in meters (positive downward).
+    mode : str, optional
         ``'compression'`` or ``'extension'``.
 
     Returns
@@ -64,7 +64,8 @@ def sigma_byerlee(
     lambda_pore = material.lambda_pore
     rho_b = material.rho_b
 
-    return f_f * rho_b * g * abs(z) * (1.0 - lambda_pore)
+    depth_below_surface = max(0.0, z)
+    return f_f * rho_b * g * depth_below_surface * (1.0 - lambda_pore)
 
 
 def eta_dislocation(
@@ -278,24 +279,22 @@ def sigma_d(
     z: float,
     temp: float,
     strain_rate: Optional[float] = None,
-    mode: Optional[str] = None,
+    mode: Optional[str] = "compression",
     return_all: bool = False,
     return_index: bool = False,
+    eta_min: Optional[float] = None,
+    eta_max: Optional[float] = None,
 ) -> Union[float, tuple]:
     """
-    Compute the differential stress for a material at a given depth,
-    temperature, and strain rate.
-
-    Returns the minimum stress required for deformation, considering
-    Byerlee's law, dislocation creep, diffusion creep, and (optionally)
-    Peierls creep.
+    Calculate the differential stress (Yield Strength) at a specific depth and
+    temperature.
 
     Parameters
     ----------
     material : Material
         Material object containing properties required for calculations.
     z : float
-        Depth in meters (z <= 0, surface = 0).
+        Depth in meters (positive downward).
     temp : float
         Temperature in Kelvin.
     strain_rate : float, optional
@@ -304,17 +303,19 @@ def sigma_d(
         ``'compression'`` or ``'extension'``.
     return_all : bool, optional
         If True, return all computed stresses (Byerlee, creep, diffusion,
-        dislocation).
+        dislocation, peierls).
     return_index : bool, optional
         If True, return the index of the controlling mechanism.
+    eta_min : float, optional
+        Minimum allowable effective viscosity (Pa·s).
+    eta_max : float, optional
+        Maximum allowable effective viscosity (Pa·s).
 
     Returns
     -------
     sigma : float or tuple
         Differential stress in Pa, or tuple of stresses if return_all is True.
     """
-    if z > 0:
-        raise ValueError(f"Depth must be <= 0 (negative downward). Got z = {z}")
     if strain_rate is None:
         e_prime = DEFAULT_STRAIN_RATE
     else:
@@ -328,6 +329,13 @@ def sigma_d(
     s_byerlee = sigma_byerlee(material, z, mode)
 
     eta_eff, eta_dis, eta_diff = eta_effective(material, temp, e_prime)
+    
+    if eta_min is not None or eta_max is not None:
+        if not np.isnan(eta_eff):
+            _min = eta_min if eta_min is not None else -np.inf
+            _max = eta_max if eta_max is not None else np.inf
+            eta_eff = float(np.clip(eta_eff, _min, _max))
+            
     creep = 2 * eta_eff * e_prime
     s_disloc = 2 * eta_dis * e_prime
     s_diff = 2 * eta_diff * e_prime
@@ -347,7 +355,7 @@ def sigma_d(
         is_peierls = False
 
     if return_all:
-        return s_byerlee, s_creep, s_diff, s_disloc
+        return s_byerlee, s_creep, s_diff, s_disloc, s_peierls
     if return_index:
         if np.isnan(s_creep) or s_byerlee <= s_creep:
             return 0
@@ -383,7 +391,7 @@ def compute_dsigma(
     background : Material or BackgroundModel
         Material object or BackgroundModel instance.
     z : float or array-like
-        Depth(s) in meters (z <= 0, surface = 0).
+        Depth(s) in meters (positive downward).
     T : float or array-like
         Temperature(s) in Kelvin.
     strain_rate : float
@@ -433,7 +441,7 @@ def compute_dsigma(
         
         res_c = sigma_d(
             mat,
-            z,
+            z_for_model,
             T,
             strain_rate=strain_rate,
             mode="compression",
@@ -442,7 +450,7 @@ def compute_dsigma(
         )
         res_e = sigma_d(
             mat,
-            z,
+            z_for_model,
             T,
             strain_rate=strain_rate,
             mode="extension",
@@ -489,7 +497,7 @@ def compute_dsigma(
             else:
                 res_c = sigma_d(
                     mat,
-                    z[i],
+                    z_for_model[i],
                     T[i],
                     strain_rate=strain_rate,
                     mode="compression",
@@ -498,7 +506,7 @@ def compute_dsigma(
                 )
                 res_e = sigma_d(
                     mat,
-                    z[i],
+                    z_for_model[i],
                     T[i],
                     strain_rate=strain_rate,
                     mode="extension",

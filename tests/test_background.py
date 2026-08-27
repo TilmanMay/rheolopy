@@ -9,7 +9,7 @@ def test_add_layers_and_initialize():
     mat2 = Material(id="mantle")
     
     model.add_layer(0, mat1)
-    model.add_layer(-30000, mat2)
+    model.add_layer(30000, mat2)
     
     model.initialize()
     
@@ -23,15 +23,15 @@ def test_get_material_at():
     mat2 = Material(id="mantle")
     
     model.add_layer(0, mat1)
-    model.add_layer(-30000, mat2)
+    model.add_layer(30000, mat2)
     model.initialize()
     
     # query shallow
-    mat = model.get_material_at(z=-10000)
+    mat = model.get_material_at(z=10000)
     assert mat.id == "crust"
     
     # query deep
-    mat = model.get_material_at(z=-40000)
+    mat = model.get_material_at(z=40000)
     assert mat.id == "mantle"
 
 def test_layer_crossing_raises():
@@ -39,7 +39,7 @@ def test_layer_crossing_raises():
     mat1 = Material(id="crust")
     mat2 = Material(id="mantle")
     
-    model.add_layer(-30000, mat1)
+    model.add_layer(30000, mat1)
     model.add_layer(0, mat2)
     
     # The initialize function sorts layers internally, but cross-checking logic
@@ -47,7 +47,7 @@ def test_layer_crossing_raises():
     # the sort properly without crossing errors for constant depths.
     model.initialize()
     assert model.layers[0].material.id == "mantle"  # 0 is top
-    assert model.layers[1].material.id == "crust"   # -30000 is bottom
+    assert model.layers[1].material.id == "crust"   # 30000 is bottom
 
 def test_print_layers_at():
     model = BackgroundModel()
@@ -55,7 +55,7 @@ def test_print_layers_at():
     mat2 = Material(id="mantle")
     
     model.add_layer(0, mat1)
-    model.add_layer(-30000, mat2)
+    model.add_layer(30000, mat2)
     model.initialize()
     
     output = model.print_layers_at(as_string=True)

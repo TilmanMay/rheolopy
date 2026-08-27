@@ -127,27 +127,27 @@ class BackgroundModel:
             df = df.sort_values(["y", "x"]).reset_index(drop=True)
             layer.data = df
 
-        # Sort layers by mean z (descending: topmost first)
+        # Sort layers by mean z (ascending: topmost first, since positive is downwards)
         self.layers.sort(
             key=lambda layer: (
-                layer.data["z"].mean() if not layer.data.empty else -np.inf
+                layer.data["z"].mean() if not layer.data.empty else np.inf
             ),
-            reverse=True,
+            reverse=False,
         )
 
-        # Find the deepest z in all layers
+        # Find the deepest and shallowest z in all layers
         all_z = np.concatenate(
             [layer.data["z"].values for layer in self.layers if not layer.data.empty]
         )
-        deepest_z = all_z.min()
-        self.z_min = deepest_z - 10_000  # 10 km below the deepest boundary
+        self.z_min = all_z.min()
+        self.z_max = all_z.max() + 10_000  # 10 km below the deepest boundary
 
         # Crossing check: no lower layer can be above an upper layer at any (x, y)
         for i in range(len(self.layers) - 1):
             top = self.layers[i].data
             bottom = self.layers[i + 1].data
             merged = pd.merge(top, bottom, on=["x", "y"], suffixes=("_top", "_bottom"))
-            crossings = merged[merged["z_bottom"] > merged["z_top"]]
+            crossings = merged[merged["z_bottom"] < merged["z_top"]]
             if not crossings.empty:
                 raise ValueError(
                     f"Layer crossing detected between layer {i} and {i+1} at points:\n"
@@ -169,27 +169,29 @@ class BackgroundModel:
             top_filtered = merged.loc[thick_mask, ["x", "y", "z_top"]].rename(
                 columns={"z_top": "z"}
             )
-            bottom_filtered = merged.loc[thick_mask, ["x", "y", "z_bottom"]].rename(
+            bot_filtered = merged.loc[thick_mask, ["x", "y", "z_bottom"]].rename(
                 columns={"z_bottom": "z"}
             )
             self.volumes.append(
-                {
-                    "top": top_filtered.reset_index(drop=True),
-                    "bottom": bottom_filtered.reset_index(drop=True),
-                    "material": top.material,
-                }
+                {"top": top_filtered, "bottom": bot_filtered, "material": top.material}
             )
-        # Add bottom-most volume: from last layer's bottom to z_min
+
+        # Add the bottom-most layer extending down to z_max
         last_layer = self.layers[-1]
-        bottom_df = last_layer.data.copy()
-        bottom_df_zmin = bottom_df.copy()
-        bottom_df_zmin["z"] = self.z_min
+        df_bottom = last_layer.data.copy()
+        df_bottom["z"] = self.z_max
+        
+        # Also compute thickness for the bottom-most volume (usually massive)
+        df_top = last_layer.data.copy()
+        merged_bottom = pd.merge(df_top, df_bottom, on=["x", "y"], suffixes=("_top", "_bottom"))
+        merged_bottom["thickness"] = np.abs(merged_bottom["z_top"] - merged_bottom["z_bottom"])
+        thick_mask_bottom = merged_bottom["thickness"] >= 1.0
+        
+        top_filtered_b = merged_bottom.loc[thick_mask_bottom, ["x", "y", "z_top"]].rename(columns={"z_top": "z"})
+        bot_filtered_b = merged_bottom.loc[thick_mask_bottom, ["x", "y", "z_bottom"]].rename(columns={"z_bottom": "z"})
+        
         self.volumes.append(
-            {
-                "top": bottom_df.reset_index(drop=True),
-                "bottom": bottom_df_zmin.reset_index(drop=True),
-                "material": last_layer.material,
-            }
+            {"top": top_filtered_b, "bottom": bot_filtered_b, "material": last_layer.material}
         )
         self.initialized = True
 
@@ -221,8 +223,8 @@ class BackgroundModel:
                 closest_idx = tuple(idx_arr[np.argmin(dist)])
 
         if all_depths:
-            # Sample 200 z values from top (z_max) to bottom (z_min)
-            z_sampled = np.linspace(self.z_max, self.z_min, n_z)
+            # Sample 200 z values from top (z_min) to bottom (z_max)
+            z_sampled = np.linspace(self.z_min, self.z_max, n_z)
             materials = []
             for z_query in z_sampled:
                 mat = None
@@ -234,11 +236,11 @@ class BackgroundModel:
                     if thickness < 1.0:
                         continue
                     if i == len(self.volumes) - 1:
-                        if z_top >= z_query >= z_bottom:
+                        if z_top <= z_query <= z_bottom:
                             mat = v["material"]
                             break
                     else:
-                        if z_top >= z_query > z_bottom:
+                        if z_top <= z_query < z_bottom:
                             mat = v["material"]
                             break
                 materials.append(mat)
@@ -256,10 +258,10 @@ class BackgroundModel:
             if thickness < 1.0:
                 continue
             if i == len(self.volumes) - 1:
-                if z_top >= z >= z_bottom:
+                if z_top <= z <= z_bottom:
                     return v["material"]
             else:
-                if z_top >= z > z_bottom:
+                if z_top <= z < z_bottom:
                     return v["material"]
         return None
 
@@ -322,12 +324,12 @@ class BackgroundModel:
                     ],
                     alpha=0.8,
                 )
-            # Fill below the lowest layer to z_min
+            # Fill below the lowest layer to z_max
             ys_low, zs_low, mat_low = layer_yz[-1]
             ax.fill_between(
                 ys_low,
                 zs_low,
-                z_min,
+                z_max,
                 color=color_map[
                     str(mat_low.id) if hasattr(mat_low, "id") else str(mat_low)
                 ],
@@ -346,9 +348,10 @@ class BackgroundModel:
             )
             ax.set_xlabel("y")
             ax.set_ylabel("z")
-            ax.set_ylim(z_min, z_max)
+            ax.set_ylim(z_max, z_min)
             ax.set_xlim(y_min, y_max)
             ax.set_title(f"Cross-section at x index={x_index} (x={x_val})")
+            fig.tight_layout()
             return fig
 
         # Default: y_index cross-section
@@ -408,12 +411,12 @@ class BackgroundModel:
                 alpha=0.8,
             )
 
-        # Fill below the lowest layer to z_min
+        # Fill below the lowest layer to z_max
         xs_low, zs_low, mat_low = layer_xz[-1]
         ax.fill_between(
             xs_low,
             zs_low,
-            z_min,
+            z_max,
             color=color_map[
                 str(mat_low.id) if hasattr(mat_low, "id") else str(mat_low)
             ],
@@ -433,9 +436,10 @@ class BackgroundModel:
         )
         ax.set_xlabel("x")
         ax.set_ylabel("z")
-        ax.set_ylim(z_min, z_max)
+        ax.set_ylim(z_max, z_min)
         ax.set_xlim(x_min, x_max)
         ax.set_title(f"Cross-section at y index={y_index} (y={y_val})")
+        fig.tight_layout()
         return fig
 
     def print_layers_at(self, x_idx=None, y_idx=None, as_string=False, tag=False):
@@ -471,9 +475,9 @@ class BackgroundModel:
             output_lines.append((z_top, z_bottom, mat_id))
             tag_list.append((z_top, z_bottom, mat))
 
-        # Sort by z_top descending (top to bottom)
-        output_lines_sorted = sorted(output_lines, key=lambda tup: tup[0], reverse=True)
-        tag_list_sorted = sorted(tag_list, key=lambda tup: tup[0], reverse=True)
+        # Sort by z_top ascending (top to bottom, since positive down)
+        output_lines_sorted = sorted(output_lines, key=lambda tup: tup[0], reverse=False)
+        tag_list_sorted = sorted(tag_list, key=lambda tup: tup[0], reverse=False)
 
         if tag:
             return tag_list_sorted
@@ -591,6 +595,7 @@ class BackgroundModel:
             location="right",
         )
         cbar.set_label("Thickness in m")
+        fig.tight_layout()
         return fig
 
     def __repr__(self):

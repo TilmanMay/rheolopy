@@ -23,7 +23,7 @@ def test_sigma_byerlee_compression():
         fc_e=0.75,
         lambda_pore=0.36
     )
-    z = -10000.0
+    z = 10000.0
     expected = 3.0 * 2850 * g * abs(z) * (1.0 - 0.36)
     result = sigma_byerlee(mat, z, mode="compression")
     assert np.isclose(result, expected)
@@ -36,7 +36,7 @@ def test_sigma_byerlee_extension():
         fc_e=0.75,
         lambda_pore=0.36
     )
-    z = -10000.0
+    z = 10000.0
     expected = 0.75 * 2850 * g * abs(z) * (1.0 - 0.36)
     result = sigma_byerlee(mat, z, mode="extension")
     assert np.isclose(result, expected)
@@ -160,11 +160,11 @@ def test_sigma_d_with_peierls():
     assert sigma_peierls_val > 0 and sigma_peierls_val < creep
     
     # Compute overall stress
-    is_peierls = sigma_d(mat, z=-40000.0, temp=500.0, strain_rate=1e-15, mode="compression", return_index=True)
-    sigma_total = sigma_d(mat, z=-40000.0, temp=500.0, strain_rate=1e-15, mode="compression")
+    is_peierls = sigma_d(mat, z=40000.0, temp=500.0, strain_rate=1e-15, mode="compression", return_index=True)
+    sigma_total = sigma_d(mat, z=40000.0, temp=500.0, strain_rate=1e-15, mode="compression")
     
     # In some cold settings, Byerlee might still be smaller than Peierls.
-    s_byerlee = sigma_byerlee(mat, -40000.0, mode="compression")
+    s_byerlee = sigma_byerlee(mat, 40000.0, mode="compression")
     if s_byerlee > sigma_peierls_val:
         assert is_peierls == 1
         assert np.isclose(sigma_total, sigma_peierls_val)
@@ -188,19 +188,15 @@ def test_sigma_d_selects_minimum():
     )
     
     # Shallow, cold: brittle should dominate (smaller than creep)
-    sigma_shallow = sigma_d(mat, z=-1000.0, temp=300.0, strain_rate=1e-15, mode="compression")
-    sigma_shallow_byerlee = sigma_byerlee(mat, -1000.0, mode="compression")
+    sigma_shallow = sigma_d(mat, z=1000.0, temp=300.0, strain_rate=1e-15, mode="compression")
+    sigma_shallow_byerlee = sigma_byerlee(mat, 1000.0, mode="compression")
     assert np.isclose(sigma_shallow, sigma_shallow_byerlee)
 
     # Deep, hot: creep should dominate (smaller than brittle)
-    sigma_deep = sigma_d(mat, z=-50000.0, temp=1200.0, strain_rate=1e-15, mode="compression")
-    sigma_deep_byerlee = sigma_byerlee(mat, -50000.0, mode="compression")
+    sigma_deep = sigma_d(mat, z=50000.0, temp=1200.0, strain_rate=1e-15, mode="compression")
+    sigma_deep_byerlee = sigma_byerlee(mat, 50000.0, mode="compression")
     assert sigma_deep < sigma_deep_byerlee
 
-def test_sigma_d_positive_depth_raises():
-    mat = Material(id="test_pos")
-    with pytest.raises(ValueError):
-        sigma_d(mat, z=1000.0, temp=300.0)
 
 def test_sigma_d_zero_depth():
     mat = Material(
@@ -224,7 +220,7 @@ def test_compute_dsigma_scalar():
         fc_e=0.75,
         lambda_pore=0.36
     )
-    dsigma_c, dsigma_e = compute_dsigma(mat, z=-1000.0, T=300.0, strain_rate=1e-15)
+    dsigma_c, dsigma_e = compute_dsigma(mat, z=1000.0, T=300.0, strain_rate=1e-15)
     assert isinstance(dsigma_c, float)
     assert isinstance(dsigma_e, float)
     assert dsigma_c < 0
@@ -242,7 +238,7 @@ def test_compute_dsigma_array():
         q_disloc=356000,
         d=1e-3
     )
-    z = np.array([-1000.0, -2000.0, -3000.0])
+    z = np.array([1000.0, 2000.0, 3000.0])
     T = np.array([300.0, 400.0, 500.0])
     
     dsigma, depths = compute_dsigma(mat, z, T, strain_rate=1e-15)

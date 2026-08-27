@@ -51,10 +51,10 @@ class Geotherm:
 
     def interpolate(self, z: Union[float, np.ndarray]) -> Union[float, np.ndarray]:
         """
-        Interpolate temperature at given depth(s) in meters (z <= 0).
+        Interpolate temperature at given depth(s) in meters (positive downward).
         Returns temperature(s) in Kelvin.
         """
-        return np.interp(np.abs(z), self.data[:, 0], self.data[:, 1])
+        return np.interp(z, self.data[:, 0], self.data[:, 1])
 
     def as_array(self) -> np.ndarray:
         """Return the raw geotherm data as a numpy array (depth [m], temp [K])."""
