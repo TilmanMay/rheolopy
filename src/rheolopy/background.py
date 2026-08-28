@@ -265,6 +265,62 @@ class BackgroundModel:
                     return v["material"]
         return None
 
+    def calc_lithostatic_pressure(self, x_idx=None, y_idx=None, z=None):
+        """
+        Calculates the lithostatic pressure at an absolute depth z by integrating
+        the densities of the overlying layers.
+
+        Parameters
+        ----------
+        x_idx : int, optional
+            x grid index.
+        y_idx : int, optional
+            y grid index.
+        z : float
+            Absolute depth in meters (positive downward).
+
+        Returns
+        -------
+        pressure : float
+            Lithostatic pressure in Pa.
+        """
+        if z is None:
+            return 0.0
+
+        x, y = self._xy_index_to_value(x_idx, y_idx)
+        closest_idx = (x, y)
+        if self.volumes:
+            try:
+                _ = self.volumes[0]["top"].loc[(x, y), "z"]
+            except KeyError:
+                idx_arr = np.array(self.volumes[0]["top"].index.tolist())
+                dist = (idx_arr[:, 0] - x)**2 + (idx_arr[:, 1] - y)**2
+                closest_idx = tuple(idx_arr[np.argmin(dist)])
+
+        pressure = 0.0
+        g = 9.80665
+        for v in self.volumes:
+            z_top = v["top"].loc[closest_idx, "z"]
+            z_bottom = v["bottom"].loc[closest_idx, "z"]
+            
+            # If the query depth is above this layer's top, it contributes nothing
+            if z <= z_top:
+                break
+                
+            # Determine how much of this layer is above depth z
+            layer_bottom = min(z, z_bottom)
+            thickness = max(0.0, layer_bottom - z_top)
+            
+            if thickness > 0:
+                rho = v["material"].rho_b
+                pressure += rho * g * thickness
+                
+            # If the query depth is within or above this layer's bottom, we are done
+            if z <= z_bottom:
+                break
+                
+        return pressure
+
     def plot_slice(self, y_index=None, x_index=None):
         """
         Plot a cross-section at the y_index-th unique y value (default) or x_index-th unique x value.

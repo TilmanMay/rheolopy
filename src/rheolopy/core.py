@@ -31,6 +31,7 @@ def sigma_byerlee(
     material: Material,
     z: float,
     mode: str,
+    P_litho: Optional[float] = None,
 ) -> float:
     """
     Compute the differential stress using Byerlee's law (Sibson, 1974).
@@ -42,8 +43,11 @@ def sigma_byerlee(
         and ``rho_b``.
     z : float
         Depth in meters (positive downward).
-    mode : str, optional
+    mode : str
         ``'compression'`` or ``'extension'``.
+    P_litho : float, optional
+        True lithostatic pressure in Pa. If not provided, it is approximated
+        using the single material's density.
 
     Returns
     -------
@@ -62,10 +66,13 @@ def sigma_byerlee(
     else:
         raise ValueError(f"Invalid parameter for mode: {mode}")
     lambda_pore = material.lambda_pore
-    rho_b = material.rho_b
 
-    depth_below_surface = max(0.0, z)
-    return f_f * rho_b * g * depth_below_surface * (1.0 - lambda_pore)
+    if P_litho is not None:
+        return f_f * P_litho * (1.0 - lambda_pore)
+    else:
+        rho_b = material.rho_b
+        depth_below_surface = max(0.0, z)
+        return f_f * rho_b * g * depth_below_surface * (1.0 - lambda_pore)
 
 
 def eta_dislocation(
@@ -284,6 +291,7 @@ def sigma_d(
     return_index: bool = False,
     eta_min: Optional[float] = None,
     eta_max: Optional[float] = None,
+    P_litho: Optional[float] = None,
 ) -> Union[float, tuple]:
     """
     Calculate the differential stress (Yield Strength) at a specific depth and
@@ -310,6 +318,8 @@ def sigma_d(
         Minimum allowable effective viscosity (Pa·s).
     eta_max : float, optional
         Maximum allowable effective viscosity (Pa·s).
+    P_litho : float, optional
+        True lithostatic pressure in Pa.
 
     Returns
     -------
@@ -326,7 +336,7 @@ def sigma_d(
         and material.stress_pd is not None
     )
 
-    s_byerlee = sigma_byerlee(material, z, mode)
+    s_byerlee = sigma_byerlee(material, z, mode, P_litho=P_litho)
 
     eta_eff, eta_dis, eta_diff = eta_effective(material, temp, e_prime)
     
@@ -414,48 +424,44 @@ def compute_dsigma(
         and depths is the corresponding array.
     """
     if isinstance(background, BackgroundModel):
-        # Use the correct (x_idx, y_idx) for the top boundary
+        # Validate indices early
         x, y = background._xy_index_to_value(x_idx, y_idx)
-        top_layer = background.layers[0]
-        top_z = top_layer.data[(top_layer.data["x"] == x) & (top_layer.data["y"] == y)][
-            "z"
-        ].values[0]
-        # z is already negative (depth convention); z_for_model adjusts
-        # relative to the model's top surface for material lookup
-        z_for_model = z - top_z
-    else:
-        z_for_model = z
 
     if np.isscalar(z):
         if isinstance(background, Material):
             mat = background
+            P_litho = None
         elif isinstance(background, BackgroundModel):
-            mat = background.get_material_at(x_idx=x_idx, y_idx=y_idx, z=z_for_model)
+            mat = background.get_material_at(x_idx=x_idx, y_idx=y_idx, z=z)
+            P_litho = background.calc_lithostatic_pressure(x_idx=x_idx, y_idx=y_idx, z=z) if mat is not None else None
         else:
             raise ValueError("background must be Material or BackgroundModel")
+            
         if mat is None:
             if return_all:
-                return (np.nan,) * 4, (np.nan,) * 4
+                return (np.nan,) * 5, (np.nan,) * 5
             else:
                 return np.nan, np.nan
         
         res_c = sigma_d(
             mat,
-            z_for_model,
+            z,
             T,
             strain_rate=strain_rate,
             mode="compression",
             return_all=return_all,
             return_index=return_index,
+            P_litho=P_litho,
         )
         res_e = sigma_d(
             mat,
-            z_for_model,
+            z,
             T,
             strain_rate=strain_rate,
             mode="extension",
             return_all=return_all,
             return_index=return_index,
+            P_litho=P_litho,
         )
         
         if return_all:
@@ -471,8 +477,8 @@ def compute_dsigma(
         return s_d_c, s_d_e
     else:
         if return_all:
-            s_d_c = np.empty((len(z), 4))
-            s_d_e = np.empty((len(z), 4))
+            s_d_c = np.empty((len(z), 5))
+            s_d_e = np.empty((len(z), 5))
         else:
             s_d_c = np.empty_like(z, dtype=float)
             s_d_e = np.empty_like(z, dtype=float)
@@ -480,38 +486,42 @@ def compute_dsigma(
         for i in range(len(z)):
             if isinstance(background, Material):
                 mat = background
+                P_litho = None
             elif isinstance(background, BackgroundModel):
                 mat = background.get_material_at(
-                    x_idx=x_idx, y_idx=y_idx, z=z_for_model[i]
+                    x_idx=x_idx, y_idx=y_idx, z=z[i]
                 )
+                P_litho = background.calc_lithostatic_pressure(x_idx=x_idx, y_idx=y_idx, z=z[i]) if mat is not None else None
             else:
                 raise ValueError("background must be Material or BackgroundModel")
             
             if mat is None:
                 if return_all:
-                    s_d_c[i] = [np.nan] * 4
-                    s_d_e[i] = [np.nan] * 4
+                    s_d_c[i] = [np.nan] * 5
+                    s_d_e[i] = [np.nan] * 5
                 else:
                     s_d_c[i] = np.nan
                     s_d_e[i] = np.nan
             else:
                 res_c = sigma_d(
                     mat,
-                    z_for_model[i],
+                    z[i],
                     T[i],
                     strain_rate=strain_rate,
                     mode="compression",
                     return_all=return_all,
                     return_index=return_index,
+                    P_litho=P_litho,
                 )
                 res_e = sigma_d(
                     mat,
-                    z_for_model[i],
+                    z[i],
                     T[i],
                     strain_rate=strain_rate,
                     mode="extension",
                     return_all=return_all,
                     return_index=return_index,
+                    P_litho=P_litho,
                 )
                 
                 if return_all:

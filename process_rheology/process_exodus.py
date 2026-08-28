@@ -221,15 +221,10 @@ def read_rheology(filename: str, db_mats: list, block_densities: list):
 def interpolate_value(v0: float, v1: float, grad: float) -> float:
     return v0 + (v1 - v0) * grad
 
-def evaluate_point(zp, temp_K, props, is_crust, eta_low, eta_up, effective_rho):
+def evaluate_point(zp, temp_K, props, is_crust, eta_low, eta_up, p_litho):
     """Evaluate rheological properties at a single depth point."""
     mat = props.material
     strain_rate = props.strain_rate
-    
-    # Workaround: we temporarily override the material's bulk density to use 
-    # the effective integrated density for accurate lithostatic pressure
-    orig_rho = mat.rho_b
-    mat.rho_b = effective_rho
 
     # Absolute depth
     depth_z = abs(zp)
@@ -237,14 +232,12 @@ def evaluate_point(zp, temp_K, props, is_crust, eta_low, eta_up, effective_rho):
     # Let rheolopy core do all the physics and clipping!
     brittle, creep, s_diff, s_disl, peierls_val = sigma_d(
         mat, depth_z, temp_K, strain_rate, mode="compression",
-        return_all=True, eta_min=eta_low, eta_max=eta_up
+        return_all=True, eta_min=eta_low, eta_max=eta_up,
+        P_litho=p_litho
     )
     
     dsigma = min(brittle, creep)
     bdt = 0 if brittle < creep else 1  # 0 = brittle, 1 = ductile
-    
-    # Restore original density
-    mat.rho_b = orig_rho
 
     eta_diff_val = (s_diff / (2.0 * strain_rate)) if not np.isnan(s_diff) else 0.0
     eta_disl_val = (s_disl / (2.0 * strain_rate)) if not np.isnan(s_disl) else 0.0
@@ -355,12 +348,8 @@ def compute_yse(
         # Compute exact lithostatic pressure (integral of rho * g * dz)
         p_litho += thickness * prop.density * GRAV
         
-        # Compute effective density for sigma_byerlee
-        depth = abs(zp - top)
-        effective_rho = p_litho / (GRAV * depth) if depth > 0 else prop.density
-        
         # Evaluate properties at this point
-        pt = evaluate_point(zp - top, temp, prop, is_crust, eta_low, eta_up, effective_rho)
+        pt = evaluate_point(zp - top, temp, prop, is_crust, eta_low, eta_up, p_litho)
         if pt["yield"] > STRESS_LIM:
             h_mech += thickness
             current_h += thickness

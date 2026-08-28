@@ -61,3 +61,24 @@ def test_print_layers_at():
     output = model.print_layers_at(as_string=True)
     assert "crust" in output
     assert "mantle" in output
+def test_calc_lithostatic_pressure():
+    model = BackgroundModel()
+    mat1 = Material(id="crust")
+    mat1.rho_b = 2800.0
+    mat2 = Material(id="mantle")
+    mat2.rho_b = 3300.0
+    model.add_layer(-2000, mat1)
+    model.add_layer(30000, mat2)
+    model.initialize()
+    g = 9.80665
+    assert model.calc_lithostatic_pressure(z=-3000) == 0.0
+    assert model.calc_lithostatic_pressure(z=-2000) == 0.0
+    expected_sl = 2000 * 2800.0 * g
+    assert np.isclose(model.calc_lithostatic_pressure(z=0), expected_sl)
+    expected_moho = 32000 * 2800.0 * g
+    # Inside mantle
+    # crust thickness = 32000, mantle thickness = 10000 (because z_max = 30000 + 10000)
+    expected_mantle = expected_moho + 10000 * 3300.0 * g
+    assert np.isclose(model.calc_lithostatic_pressure(z=40000), expected_mantle)
+    # Beyond z_max it shouldn't add more pressure
+    assert np.isclose(model.calc_lithostatic_pressure(z=50000), expected_mantle)
