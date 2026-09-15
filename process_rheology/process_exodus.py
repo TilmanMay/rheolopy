@@ -493,18 +493,24 @@ def evaluate_point(
         P_litho=p_litho,
     )
 
-    dsigma = min(brittle, creep)
-    bdt = 0 if brittle < creep else 1  # 0 = brittle, 1 = ductile
+    dsigma = float(np.nanmin([brittle, creep]))
+    
+    if np.isnan(creep):
+        bdt = 0
+    elif np.isnan(brittle):
+        bdt = 1
+    else:
+        bdt = 0 if brittle < creep else 1  # 0 = brittle, 1 = ductile
 
-    eta_diff_val = (s_diff / (2.0 * strain_rate)) if not np.isnan(s_diff) else 0.0
-    eta_disl_val = (s_disl / (2.0 * strain_rate)) if not np.isnan(s_disl) else 0.0
-    eta_eff_val = (creep / (2.0 * strain_rate)) if not np.isnan(creep) else 0.0
+    eta_diff_val = (s_diff / (2.0 * strain_rate)) if not np.isnan(s_diff) else np.nan
+    eta_disl_val = (s_disl / (2.0 * strain_rate)) if not np.isnan(s_disl) else np.nan
+    eta_eff_val = (creep / (2.0 * strain_rate)) if not np.isnan(creep) else np.nan
 
     return {
         "rho": density,
         "brittle": brittle,
         "ductile": creep,
-        "peierls": peierls_val if peierls_val is not None else 0.0,
+        "peierls": peierls_val if peierls_val is not None else np.nan,
         "yield": dsigma,
         "eta_diff": eta_diff_val,
         "eta_disl": eta_disl_val,
@@ -1087,9 +1093,9 @@ def main() -> None:
                 e_diff = yse["eta_diff"][iz]
                 e_disl = yse["eta_disl"][iz]
                 e_eff = yse["eta_eff"][iz]
-                log_diff = np.log10(e_diff) if e_diff > 0 else -99
-                log_disl = np.log10(e_disl) if e_disl > 0 else -99
-                log_eff = np.log10(e_eff) if e_eff > 0 else -99
+                log_diff = np.log10(e_diff) if (not np.isnan(e_diff) and e_diff > 0) else np.nan
+                log_disl = np.log10(e_disl) if (not np.isnan(e_disl) and e_disl > 0) else np.nan
+                log_eff = np.log10(e_eff) if (not np.isnan(e_eff) and e_eff > 0) else np.nan
 
                 f_3d.write(
                     f"{xkm:.4f},{ykm:.4f},{yse['z'][iz] * 1e-3:.4f},"
