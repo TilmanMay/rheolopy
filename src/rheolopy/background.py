@@ -32,6 +32,35 @@ class BackgroundModel:
         self.z_min = -100_000  # Set default minimum depth
         self.z_max = 0  # Set default maximum depth
         self.initialized = False
+        # Store configuration globally in the instance
+        self.config = load_config()
+
+    def load_from_config(self) -> None:
+        """
+        Loads the BackgroundModel layers automatically based on the `config.ini` file.
+        """
+        config = self.config
+        
+        # We need to map the layers dynamically from the config file since it's user-defined
+        layer_items = []
+        for key in config["General"]:
+            if key.startswith("layer_") and not key.endswith("_mat"):
+                layer_num = key.split("_")[1]
+                mat_key = f"layer_{layer_num}_mat"
+                
+                if mat_key in config["General"]:
+                    layer_items.append((
+                        int(layer_num), 
+                        config["General"][key],
+                        config["General"][mat_key]
+                    ))
+        
+        layer_items.sort(key=lambda x: x[0])
+        
+        for _, path, mat_id in layer_items:
+            self.add_layer(path, mat_id)
+            
+        print(f"Loaded {len(layer_items)} layers from config.ini")
 
     def _update_grid_info(self, layer):
         x_vals = np.unique(layer.data["x"].values)

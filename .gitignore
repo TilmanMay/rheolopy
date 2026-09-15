@@ -103,6 +103,7 @@ examples/*.png
 # Large datasets in process_rheology (keep scripts, ignore data)
 process_rheology/*.csv
 process_rheology/*.e
+process_rheology/Andes*
 process_rheology/output/
 
 # LaTeX and templates
