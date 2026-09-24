@@ -21,7 +21,7 @@ Uses the rheolopy package for physics (Byerlee's law, dislocation/diffusion
 creep viscosity, Peierls creep).
 
 Usage:
-    python process_exodus.py [config_file]
+    python process_exodus.py <input_mesh.e> [config_file]
     Default config: process_exodus.ini (in same directory as script)
 """
 
@@ -60,7 +60,7 @@ class LayerProp:
     Parameters
     ----------
     line : str
-        Space-separated line: ``Block_Name Material_ID Strain_Rate [Common_Layers]``
+        Space-separated line: ``Block_Name Material_ID Strain_Rate [Common_Layers] [Density_Threshold Alt_Material_ID]``
     db_mats : list
         List of Material objects from the rheolopy database.
     """
@@ -73,8 +73,23 @@ class LayerProp:
         self.name: str = f[0]
         self.material_id: str = f[1]
         self.strain_rate: float = float(f[2])
-        # Common_Layers is parsed for backward compat but ignored in block-aware mode
-        self.common_layers: int = int(f[3]) if len(f) > 3 else 1
+        
+        self.density_threshold = np.inf
+        self.alt_material = None
+        self.alt_material_id = None
+
+        if len(f) == 4:
+            self.common_layers = int(f[3])
+        elif len(f) == 5:
+            self.common_layers = 1
+            self.density_threshold = float(f[3])
+            self.alt_material_id = f[4]
+        elif len(f) >= 6:
+            self.common_layers = int(f[3])
+            self.density_threshold = float(f[4])
+            self.alt_material_id = f[5]
+        else:
+            self.common_layers = 1
 
         self.material = get_material_by_id(db_mats, self.material_id)
         if self.material is None:
@@ -82,10 +97,23 @@ class LayerProp:
                 f"Material ID '{self.material_id}' not found in rheolopy database."
             )
 
+        if self.alt_material_id is not None:
+            self.alt_material = get_material_by_id(db_mats, self.alt_material_id)
+            if self.alt_material is None:
+                raise ValueError(
+                    f"Alt Material ID '{self.alt_material_id}' not found in rheolopy database."
+                )
+
         # Fallback density from the material database
         self.density = self.material.rho_b
         if self.density is None or np.isnan(self.density):
             self.density = 2700.0  # Safe fallback
+
+    def get_material(self, density: float):
+        """Return the material based on the density, applying threshold if specified."""
+        if self.alt_material is not None and not np.isnan(density) and density > self.density_threshold:
+            return self.alt_material
+        return self.material
 
 
 class Config:
@@ -236,11 +264,15 @@ def read_exodus(filename: str, nx: int = 0, ny: int = 0):
     x = np.zeros(nodes2D, dtype=np.float64)
     y = np.zeros(nodes2D, dtype=np.float64)
 
+    columns_2d = np.zeros((nodes2D, nsurf), dtype=np.int32)
+
     for i in range(nodes2D):
-        col_nodes = np.array(columns[i])
+        col_nodes = np.array(columns[i], dtype=np.int32)
+        if len(col_nodes) != nsurf:
+            raise ValueError(f"Column {i} has {len(col_nodes)} nodes, expected {nsurf}")
         sorted_idx = np.argsort(-z_all[col_nodes])  # top to bottom
         col_nodes_sorted = col_nodes[sorted_idx]
-        columns[i] = col_nodes_sorted
+        columns_2d[i, :] = col_nodes_sorted
         x[i] = x_all[col_nodes_sorted[0]]
         y[i] = y_all[col_nodes_sorted[0]]
 
@@ -260,7 +292,7 @@ def read_exodus(filename: str, nx: int = 0, ny: int = 0):
         "num_nodes": num_nodes,
         "nodes2D": nodes2D,
         "nsurf": nsurf,
-        "columns": columns,
+        "columns": columns_2d,
         "num_el_blk": num_el_blk,
         "block_names": block_names,
         "ds": ds,  # Keep open for connectivity + density reading
@@ -366,10 +398,13 @@ def build_node_density(
                 .strip()
                 .rstrip("\x00")
             )
-            # Use the first variable containing "density" (prefer exact match)
-            if name_str.lower() == "density":
+            # Prefer 'density_out' over 'density' if both exist
+            if name_str.lower() == "density_out":
                 density_var_idx = i + 1
                 break
+            elif name_str.lower() == "density":
+                if density_var_idx < 0:
+                    density_var_idx = i + 1
             elif "density" in name_str.lower() and density_var_idx < 0:
                 density_var_idx = i + 1
 
@@ -483,12 +518,14 @@ def evaluate_point(
         Dictionary with keys: rho, brittle, ductile, peierls, yield,
         eta_diff, eta_disl, eta_eff, bdt.
     """
-    mat = prop.material
+    mat = prop.get_material(density)
     strain_rate = prop.strain_rate
-    depth_z = abs(depth_below_surface)
+    assert depth_below_surface >= 0.0, (
+        f"depth_below_surface must be >= 0 (got {depth_below_surface})"
+    )
 
     brittle, creep, s_diff, s_disl, peierls_val = sigma_d(
-        mat, depth_z, temp_K, strain_rate, mode="compression",
+        mat, depth_below_surface, temp_K, strain_rate, mode="compression",
         return_all=True, eta_min=eta_low, eta_max=eta_up,
         P_litho=p_litho,
     )
@@ -502,8 +539,6 @@ def evaluate_point(
     else:
         bdt = 0 if brittle < creep else 1  # 0 = brittle, 1 = ductile
 
-    eta_diff_val = (s_diff / (2.0 * strain_rate)) if not np.isnan(s_diff) else np.nan
-    eta_disl_val = (s_disl / (2.0 * strain_rate)) if not np.isnan(s_disl) else np.nan
     eta_eff_val = (creep / (2.0 * strain_rate)) if not np.isnan(creep) else np.nan
 
     return {
@@ -512,8 +547,8 @@ def evaluate_point(
         "ductile": creep,
         "peierls": peierls_val if peierls_val is not None else np.nan,
         "yield": dsigma,
-        "eta_diff": eta_diff_val,
-        "eta_disl": eta_disl_val,
+        "sigma_diff": s_diff,
+        "sigma_disl": s_disl,
         "eta_eff": eta_eff_val,
         "bdt": bdt,
     }
@@ -582,9 +617,10 @@ def compute_yse(
     out_ductile = np.zeros(nz)
     out_peierls = np.zeros(nz)
     out_yield = np.zeros(nz)
-    out_eta_diff = np.zeros(nz)
-    out_eta_disl = np.zeros(nz)
+    out_sigma_diff = np.zeros(nz)
+    out_sigma_disl = np.zeros(nz)
     out_eta_eff = np.zeros(nz)
+    out_p_litho = np.zeros(nz)
     out_bdt = np.zeros(nz, dtype=int)
     out_layer_id = np.zeros(nz, dtype=int)
     out_layer_name = [""] * nz
@@ -660,7 +696,7 @@ def compute_yse(
 
         # Evaluate rheology at this point
         pt = evaluate_point(
-            zp - top, temp, prop, rho, eta_low, eta_up, p_litho
+            top - zp, temp, prop, rho, eta_low, eta_up, p_litho
         )
 
         if pt["yield"] > STRESS_LIM:
@@ -686,9 +722,10 @@ def compute_yse(
         out_ductile[iz] = pt["ductile"]
         out_peierls[iz] = pt["peierls"]
         out_yield[iz] = pt["yield"]
-        out_eta_diff[iz] = pt["eta_diff"]
-        out_eta_disl[iz] = pt["eta_disl"]
+        out_sigma_diff[iz] = pt["sigma_diff"]
+        out_sigma_disl[iz] = pt["sigma_disl"]
         out_eta_eff[iz] = pt["eta_eff"]
+        out_p_litho[iz] = p_litho
         out_bdt[iz] = pt["bdt"]
         out_layer_id[iz] = blk_id
         out_layer_name[iz] = blk_name
@@ -719,8 +756,22 @@ def compute_yse(
     bdt_z = 0.0
     found_bdt = False
     for iz in range(1, nz):
-        if out_bdt[iz - 1] <= 0 and out_bdt[iz] != out_bdt[iz - 1]:
-            bdt_z = out_z[iz] * 1e-3
+        if out_bdt[iz - 1] == 0 and out_bdt[iz] == 1:
+            z0 = out_z[iz - 1]
+            z1 = out_z[iz]
+            
+            # f(z) = ductile - brittle. Positive in brittle regime, negative in ductile.
+            f0 = out_ductile[iz - 1] - out_brittle[iz - 1]
+            f1 = out_ductile[iz] - out_brittle[iz]
+            
+            # Linear interpolation to find where f(z) = 0 (ductile == brittle)
+            if np.isnan(f0) or np.isnan(f1) or np.isclose(f0, f1):
+                exact_z = z1
+            else:
+                fraction = -f0 / (f1 - f0)
+                exact_z = z0 + fraction * (z1 - z0)
+            
+            bdt_z = exact_z * 1e-3  # Convert meters to km
             found_bdt = True
             break
 
@@ -737,9 +788,10 @@ def compute_yse(
         "ductile": out_ductile,
         "peierls": out_peierls,
         "yield": out_yield,
-        "eta_diff": out_eta_diff,
-        "eta_disl": out_eta_disl,
+        "sigma_diff": out_sigma_diff,
+        "sigma_disl": out_sigma_disl,
         "eta_eff": out_eta_eff,
+        "p_litho": out_p_litho,
         "bdt": out_bdt,
         "layer_id": out_layer_id,
         "layer_name": out_layer_name,
@@ -815,7 +867,7 @@ def write_exodus_rheology(src_path: str, dst_path: str, data_dict: dict) -> None
             out_var = dst.createVariable(
                 f"vals_nod_var{v_idx}", "f8", ("time_step", "num_nodes")
             )
-            out_var[:] = np.tile(data_dict[vname], (n_time, 1))
+            out_var[0, :] = data_dict[vname]
 
 
 # ============================================================================
@@ -828,26 +880,20 @@ _shared: dict = {}
 
 
 def _pool_init(
-    z_all: np.ndarray,
-    T_all: np.ndarray,
-    node_block_id: np.ndarray,
-    node_density: np.ndarray,
-    columns: list,
-    x: np.ndarray,
-    y: np.ndarray,
+    temp_dir: str,
     block_props: dict,
     block_names: list,
     resolution: float,
     eta_bounds: tuple,
 ) -> None:
     """Initializer for each worker process — stores shared read-only data."""
-    _shared["z_all"] = z_all
-    _shared["T_all"] = T_all
-    _shared["node_block_id"] = node_block_id
-    _shared["node_density"] = node_density
-    _shared["columns"] = columns
-    _shared["x"] = x
-    _shared["y"] = y
+    _shared["z_all"] = np.load(os.path.join(temp_dir, "z_all.npy"), mmap_mode="r")
+    _shared["T_all"] = np.load(os.path.join(temp_dir, "T_all.npy"), mmap_mode="r")
+    _shared["node_block_id"] = np.load(os.path.join(temp_dir, "node_block_id.npy"), mmap_mode="r")
+    _shared["node_density"] = np.load(os.path.join(temp_dir, "node_density.npy"), mmap_mode="r")
+    _shared["columns"] = np.load(os.path.join(temp_dir, "columns.npy"), mmap_mode="r")
+    _shared["x"] = np.load(os.path.join(temp_dir, "x.npy"), mmap_mode="r")
+    _shared["y"] = np.load(os.path.join(temp_dir, "y.npy"), mmap_mode="r")
     _shared["block_props"] = block_props
     _shared["block_names"] = block_names
     _shared["resolution"] = resolution
@@ -883,9 +929,13 @@ def _process_column(pos2D: int) -> dict:
     xkm = _shared["x"][pos2D] * 1e-3
     ykm = _shared["y"][pos2D] * 1e-3
 
-    results = {"pos2D": pos2D, "xkm": xkm, "ykm": ykm, "col_nodes": col_nodes}
+    results = {"pos2D": pos2D, "xkm": xkm, "ykm": ykm}
 
-    for mode in ["CONSTANT", "ORIGINAL"]:
+    modes = ["ORIGINAL"]
+    if resolution > 0:
+        modes.insert(0, "CONSTANT")
+
+    for mode in modes:
         yse = compute_yse(
             zz, T_profile, col_block_ids, col_densities,
             block_props, block_names, resolution, eta_bounds, mode=mode,
@@ -909,7 +959,11 @@ def main() -> None:
         description="Process an Exodus thermal model for rheological calculations."
     )
     parser.add_argument(
-        "config", nargs="?",
+        "mesh",
+        help="Path to the input Exodus mesh file (.e).",
+    )
+    parser.add_argument(
+        "--config", "-c",
         default=os.path.join(_script_dir, "process_exodus.ini"),
         help="Path to the configuration .ini file (default: process_exodus.ini)",
     )
@@ -926,6 +980,9 @@ def main() -> None:
     # --- [1] Read config ----------------------------------------------------
     print(f"\n[1] Reading config: {cfg_path}")
     cfg = read_config(cfg_path)
+
+    # CLI mesh argument overrides config
+    cfg.input_file = args.mesh
 
     # Derive output name from input filename if not set
     if not cfg.out_name:
@@ -946,7 +1003,10 @@ def main() -> None:
 
     # --- [2] Read Exodus file -----------------------------------------------
     print(f"\n[2] Reading Exodus: {cfg.input_file}")
-    exo_path = os.path.join(workspace, cfg.input_file)
+    if os.path.isabs(cfg.input_file):
+        exo_path = cfg.input_file
+    else:
+        exo_path = os.path.join(workspace, cfg.input_file)
     exo = read_exodus(exo_path, cfg.nx, cfg.ny)
 
     z_all = exo["z_all"]
@@ -1013,36 +1073,59 @@ def main() -> None:
             "average_eta_mantle[log Pa_s]\n"
         )
         f_3.write(
-            "x[km],y[km],z[km],block_id[],block_name[],T[degC],rho[kg/m3],dsigma[MPa],"
-            "log_eta_diffusion[Pa*s],log_eta_dislocation[Pa*s],log_eta_effective[Pa*s],bdt[]\n"
+            "x[km],y[km],z[km],block_id[],block_name[],T[degC],rho[kg/m3],p_litho[MPa],dsigma[MPa],"
+            "sigma_diffusion[MPa],sigma_dislocation[MPa],log_eta_effective[Pa*s],bdt[]\n"
         )
         f_b.write("x[km],y[km],bdt[km],topography[km]\n")
         f_t.write("x[km],y[km],h_mech[km],te_decoupled[km]\n")
 
         return (f_s, f_3, f_b, f_t), (fn_str, fn_3d, fn_bdt, fn_thick)
 
-    files_const, names_const = init_outputs("CONSTANT")
+    if cfg.resolution > 0:
+        files_const, names_const = init_outputs("CONSTANT")
+    else:
+        files_const, names_const = None, None
     files_orig, names_orig = init_outputs("ORIGINAL")
 
     # Arrays to hold original resolution data for Exodus nodal variables
     exo_dsigma = np.zeros(num_nodes)
+    exo_p_litho = np.zeros(num_nodes)
     exo_eta_eff = np.zeros(num_nodes)
-    exo_eta_diff = np.zeros(num_nodes)
-    exo_eta_disl = np.zeros(num_nodes)
+    exo_sigma_diff = np.zeros(num_nodes)
+    exo_sigma_disl = np.zeros(num_nodes)
     exo_bdt = np.zeros(num_nodes)
     exo_h_mech = np.zeros(num_nodes)
     exo_te_decoupled = np.zeros(num_nodes)
 
     # --- [7] Process all columns in parallel --------------------------------
     eta_bounds = (cfg.eta_low, cfg.eta_up)
+    
+    # Save large arrays to disk to avoid Windows multiprocessing 2GB pickle limit and OOM
+    import tempfile
+    import shutil
+    temp_dir = tempfile.mkdtemp(prefix="rheolopy_", dir=out_dir)
+    print(f"\n[*] Saving shared arrays to disk for memory-mapping: {temp_dir}...")
+    
+    arrays_to_save = {
+        "z_all": z_all, 
+        "T_all": T_all, 
+        "node_block_id": node_block_id, 
+        "node_density": node_density,
+        "columns": columns, 
+        "x": x, 
+        "y": y
+    }
+    
+    for name, arr in arrays_to_save.items():
+        np.save(os.path.join(temp_dir, f"{name}.npy"), arr)
+
     print(f"\n[7] Processing {nodes2D} columns with {n_workers} workers ...")
 
     pool = Pool(
         processes=n_workers,
         initializer=_pool_init,
         initargs=(
-            z_all, T_all, node_block_id, node_density,
-            columns, x, y, block_props, block_names,
+            temp_dir, block_props, block_names,
             cfg.resolution, eta_bounds,
         ),
     )
@@ -1064,11 +1147,15 @@ def main() -> None:
 
         xkm = result["xkm"]
         ykm = result["ykm"]
-        col_nodes = result["col_nodes"]
+        col_nodes = columns[result["pos2D"]]
 
-        for mode, (f_str, f_3d, f_bdt, f_thick) in zip(
-            ["CONSTANT", "ORIGINAL"], [files_const, files_orig]
-        ):
+        modes = ["ORIGINAL"]
+        mode_files = [files_orig]
+        if cfg.resolution > 0:
+            modes.insert(0, "CONSTANT")
+            mode_files.insert(0, files_const)
+
+        for mode, (f_str, f_3d, f_bdt, f_thick) in zip(modes, mode_files):
             yse = result[mode]
 
             ts = yse["total_strength"]
@@ -1090,19 +1177,19 @@ def main() -> None:
             )
 
             for iz in range(yse["nz"]):
-                e_diff = yse["eta_diff"][iz]
-                e_disl = yse["eta_disl"][iz]
+                s_diff = yse["sigma_diff"][iz]
+                s_disl = yse["sigma_disl"][iz]
                 e_eff = yse["eta_eff"][iz]
-                log_diff = np.log10(e_diff) if (not np.isnan(e_diff) and e_diff > 0) else np.nan
-                log_disl = np.log10(e_disl) if (not np.isnan(e_disl) and e_disl > 0) else np.nan
+                s_diff_MPa = s_diff * 1e-6 if not np.isnan(s_diff) else np.nan
+                s_disl_MPa = s_disl * 1e-6 if not np.isnan(s_disl) else np.nan
                 log_eff = np.log10(e_eff) if (not np.isnan(e_eff) and e_eff > 0) else np.nan
 
                 f_3d.write(
                     f"{xkm:.4f},{ykm:.4f},{yse['z'][iz] * 1e-3:.4f},"
                     f"{yse['layer_id'][iz]},{yse['layer_name'][iz]},"
                     f"{yse['T'][iz]:.4f},{yse['rho'][iz]:.1f},"
-                    f"{yse['yield'][iz] * 1e-6:.6f},"
-                    f"{log_diff:.6f},{log_disl:.6f},{log_eff:.6f},"
+                    f"{yse['p_litho'][iz] * 1e-6:.6f},{yse['yield'][iz] * 1e-6:.6f},"
+                    f"{s_diff_MPa:.6f},{s_disl_MPa:.6f},{log_eff:.6f},"
                     f"{yse['bdt'][iz]}\n"
                 )
 
@@ -1110,9 +1197,10 @@ def main() -> None:
                 if mode == "ORIGINAL":
                     idx = col_nodes[iz]
                     exo_dsigma[idx] = yse["yield"][iz] * 1e-6  # MPa
+                    exo_p_litho[idx] = yse["p_litho"][iz] * 1e-6  # MPa
                     exo_eta_eff[idx] = log_eff
-                    exo_eta_diff[idx] = log_diff
-                    exo_eta_disl[idx] = log_disl
+                    exo_sigma_diff[idx] = s_diff_MPa
+                    exo_sigma_disl[idx] = s_disl_MPa
                     exo_bdt[idx] = yse["bdt"][iz]
                     exo_h_mech[idx] = yse["mechanical_thickness"] * 1e-3
                     exo_te_decoupled[idx] = yse["te_decoupled"] * 1e-3
@@ -1126,22 +1214,36 @@ def main() -> None:
     pool.close()
     pool.join()
     print()
+    
+    if os.path.exists(temp_dir):
+        shutil.rmtree(temp_dir)
 
-    for fs in files_const + files_orig:
+    all_files = list(files_orig)
+    if files_const is not None:
+        all_files.extend(files_const)
+        
+    for fs in all_files:
         fs.close()
 
     # --- [8] Write augmented Exodus file ------------------------------------
     out_exo_name = f"{cfg.out_name}_rheology.e"
     dst_exo = os.path.join(out_dir, out_exo_name)
+    # Replace NaN with 0.0 for Exodus (Paraview renders NaN as fill values)
+    exo_eta_eff = np.nan_to_num(exo_eta_eff, nan=0.0)
+    exo_sigma_diff = np.nan_to_num(exo_sigma_diff, nan=0.0)
+    exo_sigma_disl = np.nan_to_num(exo_sigma_disl, nan=0.0)
+
     data_dict = {
         "dsigma_MPa": exo_dsigma,
-        "log_eta_eff": exo_eta_eff,
-        "log_eta_diff": exo_eta_diff,
-        "log_eta_disl": exo_eta_disl,
-        "bdt": exo_bdt,
-        "h_mech": exo_h_mech,
-        "te_decoupled": exo_te_decoupled,
+        "p_litho_MPa": exo_p_litho,
+        "eta_eff_log_Pa_s": exo_eta_eff,
+        "sigma_diff_MPa": exo_sigma_diff,
+        "sigma_disl_MPa": exo_sigma_disl,
+        "bdt_flag": exo_bdt,
+        "h_mech_km": exo_h_mech,
+        "te_decoupled_km": exo_te_decoupled,
     }
+
     write_exodus_rheology(exo_path, dst_exo, data_dict)
 
     elapsed = (datetime.now() - t_start).total_seconds()
